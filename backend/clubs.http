@@ -1,0 +1,501 @@
+# clubs.http
+# REST Client file for testing Club API endpoints
+### Variables
+@baseUrl = http://127.0.0.1:8000/api/v1/clubs/
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYyNzAxMTk0LCJpYXQiOjE3NjI2OTc1OTQsImp0aSI6IjgyNjcxOTAxMTFjYzQyY2Q4YmI0MTljNmFjNjM1MzhmIiwidXNlcl9pZCI6IjEifQ.kqMcsI2wWeLiQk2t_Rmc89CNeJObOQwYnA8nS7_0xQU
+@clubId = 7393023691770040320
+@postId = 7391907467086532608
+@eventId = 7392190347431907328
+@userId = 3
+
+##
+GET {{baseUrl}}test/manager/
+Authorization: Bearer {{accessToken}}
+
+
+########################################
+# CLUB MANAGEMENT
+########################################
+
+### List All Clubs  -----WORKS---
+GET {{baseUrl}}
+Authorization: Bearer {{accessToken}}
+
+### Create Club   -----WORKS---
+POST {{baseUrl}}create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "New Club",
+  "about": "A community for technology lovers to share ideas and collaborate"
+}
+
+### Get Club Details ---WORKS---
+GET {{baseUrl}}{{clubId}}/
+Authorization: Bearer {{accessToken}}
+
+
+### List All Members---WORKS---
+GET {{baseUrl}}{{clubId}}/members/
+Authorization: Bearer {{accessToken}}
+
+
+### Join Club---WORKS---
+POST {{baseUrl}}{{clubId}}/join/
+Authorization: Bearer {{accessToken}}
+
+
+
+### Update Club (Admin Only) ___WORKS---
+PATCH {{baseUrl}}{{clubId}}/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "about": "Updated description for the club",
+  "avatar": "https://example.com/new-avatar.jpg"
+}
+
+
+
+### Delete Club (Admin Only) ---WORKS---
+DELETE {{baseUrl}}{{clubId}}/
+Authorization: Bearer {{accessToken}}
+
+
+
+### Leave Club---WORKS---
+POST {{baseUrl}}{{clubId}}/leave/
+Authorization: Bearer {{accessToken}}
+
+
+
+
+
+
+
+
+
+### List Clubs with Search
+# GET {{baseUrl}}/clubs/?search=tech&page=1&page_size=10
+# Authorization: Bearer {{accessToken}}
+
+# ### List My Clubs
+# GET {{baseUrl}}/clubs/?my_clubs=true
+# Authorization: Bearer {{accessToken}}
+
+
+
+
+
+
+
+
+
+
+
+
+########################################
+# MEMBER MANAGEMENT ---WORKS---
+########################################
+
+
+### Promote to Admin -- Works---
+PATCH {{baseUrl}}{{clubId}}/members/{{userId}}/role/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "role": "admin"
+}
+
+
+### Demote to Member -- Works---
+PATCH {{baseUrl}}{{clubId}}/members/{{userId}}/role/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "role": "member"
+}
+
+
+### Update Member Role (Admin Only) -- WORKS ----
+PATCH {{baseUrl}}{{clubId}}/members/{{userId}}/role/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "role": "moderator"
+}
+
+
+### Remove Member (Admin/Moderator Only) -- WORKS ----
+DELETE {{baseUrl}}{{clubId}}/members/{{userId}}/remove/
+Authorization: Bearer {{accessToken}}
+
+
+
+### List Members by Role (filter)
+# GET {{baseUrl}}/clubs/{{clubId}}/members/?role=admin
+# Authorization: Bearer {{accessToken}}
+
+
+
+
+
+
+
+########################################
+# POSTS ---WORKS---
+########################################
+
+### List All Posts in Club --WORKS---
+GET {{baseUrl}}{{clubId}}/posts/
+Authorization: Bearer {{accessToken}}
+
+### List Posts with Pagination
+# GET {{baseUrl}}{{clubId}}/posts/?page=1&page_size=20
+# Authorization: Bearer {{accessToken}}
+
+### Create Post -- WORKS ---
+POST {{baseUrl}}{{clubId}}/posts/create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "club": "{{clubId}}",
+  "title": "Welcome to YSD!",
+  "content": " this is a yt video link",
+  "image": "https://www.youtube.com/watch?v=BGpzGu9Yp6Y&list=RDlwk5OUII9Vc&index=5"
+}
+
+### Create Post (Minimal) -- WORKS ---
+POST {{baseUrl}}{{clubId}}/posts/create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "club": "{{clubId}}",
+  "title": "Quick Update",
+  "content": "Just a quick update for everyone."
+}
+
+### Get Post Details -- WORKS ---
+GET {{baseUrl}}{{clubId}}/posts/{{postId}}/
+Authorization: Bearer {{accessToken}}
+
+### Update Post (Author or Moderator) -- WORKS ---
+PATCH {{baseUrl}}{{clubId}}/posts/{{postId}}/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Updated Title",
+  "content": "This post has been updated with new information."
+}
+
+### Pin Post (Moderator/Admin) -- WORKS ---
+PATCH {{baseUrl}}{{clubId}}/posts/{{postId}}/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "is_pinned": true
+}
+
+### Delete Post (Author or Moderator) -- WORKS ---
+DELETE {{baseUrl}}{{clubId}}/posts/{{postId}}/
+Authorization: Bearer {{accessToken}}
+
+
+
+
+########################################
+# EVENTS --- WORKS ---
+########################################
+
+### List All Events in Club
+GET {{baseUrl}}{{clubId}}/events/
+Authorization: Bearer {{accessToken}}
+
+### List Upcoming Events
+GET {{baseUrl}}{{clubId}}/events/?status=upcoming
+Authorization: Bearer {{accessToken}}
+
+### List Ongoing Events
+GET {{baseUrl}}{{clubId}}/events/?status=ongoing
+Authorization: Bearer {{accessToken}}
+
+### List Completed Events
+GET {{baseUrl}}{{clubId}}/events/?status=completed
+Authorization: Bearer {{accessToken}}
+
+### List Events with Pagination
+GET {{baseUrl}}{{clubId}}/events/?page=1&page_size=10
+Authorization: Bearer {{accessToken}}
+
+### Create Event
+POST {{baseUrl}}{{clubId}}/events/create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "club": "{{clubId}}",
+  "title": "Tech Meetup 2025",
+  "description": "Join us for an exciting tech meetup where we'll discuss the latest trends in AI and web development.",
+  "location": "Tech Hub, Building A, Room 301",
+  "start_time": "2025-12-15T18:00:00Z",
+  "end_time": "2025-12-15T21:00:00Z",
+  "status": "upcoming",
+  "max_participants": 100,
+  "image": "https://example.com/event-banner.jpg"
+}
+
+### Create Event (Minimal)
+POST {{baseUrl}}{{clubId}}/events/create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "club": "{{clubId}}",
+  "title": "Quick Meeting",
+  "description": "Emergency meeting for all members",
+  "start_time": "2025-11-10T15:00:00Z",
+  "end_time": "2025-11-10T16:00:00Z"
+}
+
+### Create Event (No Participant Limit)
+POST {{baseUrl}}{{clubId}}/events/create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "club": "{{clubId}}",
+  "title": "Open Workshop",
+  "description": "Workshop open to all club members",
+  "location": "Online - Zoom",
+  "start_time": "2025-11-20T14:00:00Z",
+  "end_time": "2025-11-20T17:00:00Z",
+  "status": "upcoming"
+}
+
+### Get Event Details
+GET {{baseUrl}}{{clubId}}/events/{{eventId}}/
+Authorization: Bearer {{accessToken}}
+
+### Update Event (Creator or Moderator)
+PATCH {{baseUrl}}{{clubId}}/events/{{eventId}}/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Updated Event Title",
+  "location": "New Location - Building B",
+  "max_participants": 100
+}
+
+### Change Event Status
+PATCH {{baseUrl}}{{clubId}}/events/{{eventId}}/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "status": "ongoing"
+}
+
+### Cancel Event
+PATCH {{baseUrl}}{{clubId}}/events/{{eventId}}/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "status": "cancelled"
+}
+
+### Delete Event (Creator or Moderator)
+DELETE {{baseUrl}}{{clubId}}/events/{{eventId}}/
+Authorization: Bearer {{accessToken}}
+
+### Join Event
+POST {{baseUrl}}{{clubId}}/events/{{eventId}}/join/
+Authorization: Bearer {{accessToken}}
+
+### Leave Event
+POST {{baseUrl}}{{clubId}}/events/{{eventId}}/leave/
+Authorization: Bearer {{accessToken}}
+
+### Get Event Participants
+GET {{baseUrl}}{{clubId}}/events/{{eventId}}/participants/
+Authorization: Bearer {{accessToken}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+########################################
+# TESTING SCENARIOS
+########################################
+
+### Test: Create Club → Join → Create Post → Create Event (Full Flow)
+
+### Step 1: Create a new club
+POST {{baseUrl}}/clubs/create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Coding Club",
+  "description": "Learn and code together"
+}
+
+### Step 2: Get the club ID from response, then list members
+# GET {{baseUrl}}/clubs/{NEW_CLUB_ID}/members/
+
+### Step 3: Create a post in the club
+# POST {{baseUrl}}/clubs/{NEW_CLUB_ID}/posts/create/
+
+### Step 4: Create an event
+# POST {{baseUrl}}/clubs/{NEW_CLUB_ID}/events/create/
+
+########################################
+# ERROR TESTING
+########################################
+
+### Test: Join Already Joined Club (Should return error)
+POST {{baseUrl}}/clubs/{{clubId}}/join/
+Authorization: Bearer {{accessToken}}
+
+### Test: Leave Club Not Member Of (Should return error)
+POST {{baseUrl}}/clubs/999999999/leave/
+Authorization: Bearer {{accessToken}}
+
+### Test: Access Without Authentication (Should return 401)
+GET {{baseUrl}}/clubs/{{clubId}}/
+# No Authorization header
+
+### Test: Update Club Without Admin Rights (Should return 403)
+PATCH {{baseUrl}}/clubs/{{clubId}}/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Hacked Club Name"
+}
+
+### Test: Join Full Event (Should return error if event is full)
+POST {{baseUrl}}/clubs/{{clubId}}/events/{{eventId}}/join/
+Authorization: Bearer {{accessToken}}
+
+### Test: Access Non-existent Club (Should return 404)
+GET {{baseUrl}}/clubs/999999999999/
+Authorization: Bearer {{accessToken}}
+
+########################################
+# BULK OPERATIONS (for testing with multiple items)
+########################################
+
+### Create Multiple Posts
+POST {{baseUrl}}/clubs/{{clubId}}/posts/create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Post 1",
+  "content": "Content for post 1"
+}
+
+###
+POST {{baseUrl}}/clubs/{{clubId}}/posts/create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Post 2",
+  "content": "Content for post 2"
+}
+
+###
+POST {{baseUrl}}/clubs/{{clubId}}/posts/create/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Post 3",
+  "content": "Content for post 3"
+}
+
+########################################
+# PAGINATION TESTING
+########################################
+
+### Test First Page
+GET {{baseUrl}}/clubs/{{clubId}}/posts/?page=1&page_size=5
+Authorization: Bearer {{accessToken}}
+
+### Test Second Page
+GET {{baseUrl}}/clubs/{{clubId}}/posts/?page=2&page_size=5
+Authorization: Bearer {{accessToken}}
+
+### Test Large Page Size
+GET {{baseUrl}}/clubs/{{clubId}}/posts/?page=1&page_size=100
+Authorization: Bearer {{accessToken}}
+
+### Test Invalid Page
+GET {{baseUrl}}/clubs/{{clubId}}/posts/?page=999
+Authorization: Bearer {{accessToken}}
+
+########################################
+# SEARCH & FILTER TESTING
+########################################
+
+### Search Clubs by Name
+GET {{baseUrl}}/clubs/?search=tech
+Authorization: Bearer {{accessToken}}
+
+### Search Clubs by Description
+GET {{baseUrl}}/clubs/?search=community
+Authorization: Bearer {{accessToken}}
+
+### Filter Events by Status
+GET {{baseUrl}}/clubs/{{clubId}}/events/?status=upcoming
+Authorization: Bearer {{accessToken}}
+
+### Filter Members by Role
+GET {{baseUrl}}/clubs/{{clubId}}/members/?role=admin
+Authorization: Bearer {{accessToken}}
+
+########################################
+# ADMIN OPERATIONS
+########################################
+
+### Promote User to Moderator
+PATCH {{baseUrl}}/clubs/{{clubId}}/members/2/role/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "role": "moderator"
+}
+
+### Promote User to Admin
+PATCH {{baseUrl}}/clubs/{{clubId}}/members/3/role/
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "role": "admin"
+}
+
+### Remove Member
+DELETE {{baseUrl}}/clubs/{{clubId}}/members/4/remove/
+Authorization: Bearer {{accessToken}}

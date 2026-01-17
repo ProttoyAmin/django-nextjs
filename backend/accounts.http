@@ -1,0 +1,83 @@
+GET http://127.0.0.1:8000/api/v1/accounts/auth/users/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYyMzgxMzA3LCJpYXQiOjE3NjIzNzk1MDcsImp0aSI6ImJlNDNkNjdiZDVhODRlMWU4OWQ3OTEwNTliMWI2ZjZjIiwidXNlcl9pZCI6IjEifQ.dNZULESUmzIL_bOBiYfkIxiMweQGy6qc-FLM2T-m0gA
+
+
+###
+POST http://127.0.0.1:8000/api/v1/accounts/auth/jwt/logout/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYxODMxMzIzLCJpYXQiOjE3NjE4Mjk1MjQsImp0aSI6IjAzMWQzMmVlODNkZDQ0MDViMWYxZmZlOTk1MDVjNzk5IiwidXNlcl9pZCI6IjEifQ.ZRjQd8m-T67kfiwerlPQbAygXx_LKgfbYHH88ZiLz7k
+
+
+
+{
+  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MjQzNDMyMywiaWF0IjoxNzYxODI5NTIzLCJqdGkiOiJlY2FmYzgxMTYwMGQ0NGMwYmRlYjA1MmI2ZjFlNWM2NCIsInVzZXJfaWQiOiIxIn0.FpHmW_afsEEMTp7zcud9cqF92jFuMPFHHfdX6r0bbeQ"
+}
+
+
+
+
+
+###
+POST http://127.0.0.1:8000/api/v1/accounts/auth/obtain/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "username_or_email" : "prottoy",
+    "password" : "12345"
+}
+
+
+###
+POST http://127.0.0.1:8000/api/v1/accounts/auth/jwt/refresh/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "refresh" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2NTMxODg5NSwiaWF0IjoxNzYyNzI2ODk1LCJqdGkiOiI4MjlmZTFhMjEyYjM0OTljYWUxOTYyZDY4ZTNhMGVlMiIsInVzZXJfaWQiOiIxIn0.ThhZAPgM_hwM0wlkkmH15nicIY7nqdrIuzYwtK_70bw"
+}
+
+###
+POST http://127.0.0.1:8000/api/v1/accounts/auth/jwt/verify/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYyOTUxNjI1LCJpYXQiOjE3NjI5NDgwMjUsImp0aSI6IjZhNzYzYjk5ODc4ZDRlMTZiYmY3ZDJjNzQwODhhMzRhIiwidXNlcl9pZCI6IjEifQ.A4HDkfbHdLaS2OiRkrIe-7UF4xtDUBv2z5t7EjLb6fs"
+}
+
+
+###
+POST http://127.0.0.1:8000/api/v1/accounts/auth/register/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "username" : "dutty",
+    "email" : "dutty@gmail.com",
+    "password" : "12345",
+    "re_password" : "12345",
+    "edu_mail" : "dutty@g.bracu.ac.bd"
+}
+###
+GET http://127.0.0.1:8000/api/v1/accounts/auth/users/user/prottoy/ HTTP/1.1
+Content-Type: application/json
+Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYyMzgxMzA3LCJpYXQiOjE3NjIzNzk1MDcsImp0aSI6ImJlNDNkNjdiZDVhODRlMWU4OWQ3OTEwNTliMWI2ZjZjIiwidXNlcl9pZCI6IjEifQ.dNZULESUmzIL_bOBiYfkIxiMweQGy6qc-FLM2T-m0gA
+
+
+
+
+# POSTS
+###
+GET http://127.0.0.1:8000/api/v1/clubs/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYyMzY3MjMwLCJpYXQiOjE3NjIzNjU0MzAsImp0aSI6IjE4MDQyZWMwN2VmZjQyMTg4MWFmMDM2MzVhOTFjMjU3IiwidXNlcl9pZCI6IjEifQ.RWqT2xG-Kep2u-LGKAdMiAVg1zeqLygqVQnpgMOax98
+
+
+###
+GET http://127.0.0.1:8000/api/v1/clubs/7391805127385944064/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYyMzQ4MDYxLCJpYXQiOjE3NjIzNDYyNjIsImp0aSI6ImMyYjE5NTRmMmVkNTQxYjI4YTNmNTExMGQxNDk3OWU1IiwidXNlcl9pZCI6IjEifQ.z2rPjM2y2Hlrp81_tzOgI1foxYwPHf_OsgKk58jUHQ8
+
+
+
+###
+GET http://127.0.0.1:8000/api/v1/clubs/7391852994666434560/members/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYyMzY3MjMwLCJpYXQiOjE3NjIzNjU0MzAsImp0aSI6IjE4MDQyZWMwN2VmZjQyMTg4MWFmMDM2MzVhOTFjMjU3IiwidXNlcl9pZCI6IjEifQ.RWqT2xG-Kep2u-LGKAdMiAVg1zeqLygqVQnpgMOax98

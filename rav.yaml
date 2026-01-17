@@ -1,0 +1,7 @@
+scripts:
+  server: cd backend && python manage.py runserver
+  dev: cd frontend && npm run dev
+  migrations: cd backend && python manage.py makemigrations
+  migrate: cd backend && python manage.py migrate
+  build: cd frontend && npm run build
+  start: cd frontend && npm start
