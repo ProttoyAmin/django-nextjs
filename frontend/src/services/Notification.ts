@@ -8,8 +8,9 @@ export class NotificationService {
         this.apiClient = new ApiClient(process.env.NEXT_PUBLIC_NOTIFICATIONS_API || '');
     }
 
-    async getNotifications(): Promise<any> {
-        return this.apiClient.request<NotificationResponse>('', 'GET');
+    async getNotifications(verb?: string): Promise<any> {
+        const url = verb ? `?type=${verb}` : '';
+        return this.apiClient.request<NotificationResponse>(url, 'GET');
     }
 
     async getUnreadNotifications(): Promise<any> {
@@ -49,11 +50,11 @@ export class NotificationService {
     }
 
     async markAllAsRead(): Promise<any> {
-        return this.apiClient.request<any>('mark-all-read/', 'PATCH');
+        return this.apiClient.request<any>('mark-all-read/', 'POST');
     }
 
     async markAllAsUnread(): Promise<any> {
-        return this.apiClient.request<any>('mark-all-unread/', 'PATCH');
+        return this.apiClient.request<any>('mark-all-unread/', 'POST');
     }
 
     async markAllAsSeen(): Promise<any> {

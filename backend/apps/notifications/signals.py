@@ -139,7 +139,7 @@ def _create_follow_accepted_notification(follow):
     return notification
 
 
-def _send_websocket_notification(notification, target, recipient):
+def _send_websocket_notification(notification, recipient, target=None):
     """
     Send a real-time notification via WebSocket.
     This will push the notification to the user's notification channel.
@@ -161,7 +161,7 @@ def _send_websocket_notification(notification, target, recipient):
                 'last_name': primary_actor.actor.last_name,
                 'avatar': primary_actor.actor.avatar or None,
             }
-            
+
         if target:
             target_data = {
                 'id': target['id'],
@@ -206,7 +206,7 @@ def create_like_notification(sender, instance, created, **kwargs):
 
     # Get the liked content using GenericForeignKey
     liked_content = instance.content_object
-    
+
     if liked_content is None:
         return None
 
@@ -249,6 +249,6 @@ def create_like_notification(sender, instance, created, **kwargs):
     )
 
     # Send real-time notification via WebSocket
-    _send_websocket_notification(notification, target_object, post_owner)
+    _send_websocket_notification(notification, post_owner, target_object)
 
     return notification

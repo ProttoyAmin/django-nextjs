@@ -1,12 +1,8 @@
 // app/[username]/layout.tsx
-export default function UserProfileLayout({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) {
-    return (
-      <>
-        {children}
-      </>
-    );
-  }
+export default function PostLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}
