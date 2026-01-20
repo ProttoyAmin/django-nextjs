@@ -9,6 +9,7 @@ import commentReducer from "./slices/comment";
 import clubReducer from "./slices/club";
 import rolesReducer from "./slices/roles";
 import notificationReducer from "./slices/notifications";
+import instituteReducer from "./slices/institute";
 
 const authPersistConfig = {
   key: 'auth',
@@ -25,6 +26,7 @@ const rootReducer = combineReducers({
   club: clubReducer,
   roles: rolesReducer,
   notifications: notificationReducer,
+  institute: instituteReducer,
 });
 
 export const store = configureStore({

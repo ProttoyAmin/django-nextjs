@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'apps.posts',
     'apps.connections',
     'apps.notifications',
+    'apps.institutes',
 ]
 
 
@@ -129,10 +130,10 @@ DJOSER = {
         'current_user': 'apps.accounts.serializers.RegisterSerializer',
         'user_delete': 'djoser.serializers.UserDeleteSerializer',
     },
-    'EMAIL': {
-        'activation': 'apps.accounts.emails.CustomActivationEmail',
-        'confirmation': 'apps.accounts.emails.CustomConfirmationEmail',
-    }
+    # 'EMAIL': {
+    #     'activation': 'apps.accounts.emails.CustomActivationEmail',
+    #     'confirmation': 'apps.accounts.emails.CustomConfirmationEmail',
+    # }
 }
 
 DOMAIN = getenv('DOMAIN', '127.0.0.1')

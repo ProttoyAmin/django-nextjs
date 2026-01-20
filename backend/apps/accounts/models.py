@@ -27,7 +27,7 @@ class User(AbstractUser):
 
     EMAIL_PREFERENCE_CHOICES = [
         ('email', 'Personal Email'),
-        ('edu_mail', 'Educational Email'),
+        ('professional_email', 'Professional Email'),
     ]
 
     STATUS_CHOICES = [
@@ -36,10 +36,23 @@ class User(AbstractUser):
         ('dnd', 'Do Not Disturb'),
     ]
 
-    edu_mail = models.EmailField(
+    institute = models.ForeignKey(
+        "institutes.Institute",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users"
+    )
+    professional_email = models.EmailField(
         unique=True, blank=True, null=True, default='')
     student_id = models.CharField(unique=True, blank=True, null=True)
-    department = models.CharField(blank=True, null=True)
+    department = models.ForeignKey(
+        "institutes.Department",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users"
+    )
     year = models.PositiveSmallIntegerField(blank=True, null=True)
     level = models.PositiveBigIntegerField(blank=True, null=True)
     email_verified = models.BooleanField(default=False)
@@ -91,8 +104,18 @@ class User(AbstractUser):
 
     def __str__(self):
         return f'{self.username} - {self.id}'
+    
+    def get_full_name(self):
+        """Return the full name of the user"""
+        full_name = f'{self.first_name} {self.last_name}'.strip()
+        return full_name if full_name else self.username
 
     # ==================== CLUB RELATED PROPERTIES ====================
+    
+    @property
+    def origin(self):
+        """Get the user origin (institute name)"""
+        return self.institute.name if self.institute else None
 
     @property
     def joined_clubs(self):
@@ -118,6 +141,12 @@ class User(AbstractUser):
             user=self
         ).select_related('club')
         return [m.club for m in memberships]
+
+    @property
+    def club_count(self):
+        """Count of clubs user is member of"""
+        from apps.clubs.models import Membership
+        return Membership.objects.filter(user=self).count()
 
     def is_club_member(self, club):
         """Check if user is a member of a specific club"""
@@ -176,16 +205,15 @@ class User(AbstractUser):
     #     except Membership.DoesNotExist:
     #         return []
 
-    @property
-    def club_count(self):
-        """Count of clubs user is member of"""
-        from apps.clubs.models import Membership
-        return Membership.objects.filter(user=self).count()
-
     def get_club_posts_count(self):
         """Count of posts in clubs"""
         from apps.posts.models import Post
         return Post.objects.filter(author=self, club_post__isnull=False).count()
+
+    def get_club_posts(self):
+        """Get all club posts created by this user"""
+        from apps.posts.models import Post
+        return Post.objects.filter(author=self, club__isnull=False, is_deleted=False)
 
     # ==================== CONNECTIONS RELATED PROPERTIES ====================
 
@@ -313,16 +341,6 @@ class User(AbstractUser):
         from apps.posts.models import Post
         return Post.objects.filter(author=self, club__isnull=True, is_deleted=False).count()
 
-    def get_club_posts(self):
-        """Get all club posts created by this user"""
-        from apps.posts.models import Post
-        return Post.objects.filter(author=self, club__isnull=False, is_deleted=False)
-
-    def get_club_posts_count(self):
-        """Count of club posts created by this user"""
-        from apps.posts.models import Post
-        return Post.objects.filter(author=self, club__isnull=False, is_deleted=False).count()
-
     @property
     def total_posts_count(self):
         """Total posts (user posts + club posts)"""
@@ -367,8 +385,8 @@ class User(AbstractUser):
 
     def get_notification_email(self):
         """Get the email address to use for notifications based on user preference"""
-        if self.preferred_email == 'edu_mail' and self.edu_mail:
-            return self.edu_mail
+        if self.preferred_email == 'professional_email' and self.professional_email:
+            return self.professional_email
         return self.email
 
     def get_recent_activity(self, limit=10):

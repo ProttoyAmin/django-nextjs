@@ -5,8 +5,8 @@ export type RForm = {
     email: string;
     password: string;
     re_password: string;
-    edu_mail: string;
-    type: string;
+    institute?: string;
+    professional_email?: string;
 }
 
 export type LForm = {
@@ -42,7 +42,7 @@ export interface UserType {
     first_name: string;
     last_name: string;
     email: string;
-    edu_mail: string | null;
+    professional_email: string | null;
     url: string;
     student_id: string | null;
     status: string;
@@ -108,7 +108,7 @@ export interface EditProfileType {
     first_name: string;
     last_name: string;
     email: string;
-    edu_mail: string | null;
+    professional_email: string | null;
     student_id: string | null;
     department: string | null;
     year: string | null;

@@ -31,7 +31,7 @@ function ClubPage() {
   const dispatch = useAppDispatch();
   const club = useAppSelector((state) => selectClubById(state, id));
   const userClub = useAppSelector((state) =>
-    state.user.currentUser?.clubs.find((club) => club.club_id === id)
+    state.user.currentUser?.clubs.find((club) => club.club_id === id),
   );
   const [loading, setLoading] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -182,7 +182,7 @@ function ClubPage() {
                   <span>•</span>
                   <span>{club?.member_count} members</span>
                   <span>•</span>
-                  <span>{club?.origin.toLocaleLowerCase()}</span>
+                  <span>{club?.origin}</span>
                 </div>
               </div>
 

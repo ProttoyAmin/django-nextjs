@@ -5,6 +5,7 @@ from django.utils import timezone
 from djoser.serializers import TokenCreateSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from . import models
 from apps.clubs.models import Club, Membership, Role
 
@@ -12,6 +13,7 @@ from apps.interactions.models import Like, Comment, Share
 from djoser.serializers import UserCreateSerializer
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from apps.institutes.models import Institute
 
 
 EDUCATION_EMAIL_DOMAINS = [
@@ -24,8 +26,34 @@ PROFESSIONAL_EMAIL_DOMAINS = [
 ]
 
 
-def match_emails(email, domain_list):
-    return any(email.endswith(domain) for domain in domain_list)
+def get_institutes():
+    """Get all institutes"""
+    return Institute.objects.filter(is_active=True)
+
+
+def get_email_domain_list(institute):
+    """Get list of active email domains for an institute"""
+    if not institute:
+        return []
+    domains = institute.get_active_email_domains()
+    return {
+        domain.domain_type: domain.domain for domain in domains
+    }
+
+
+def match_email_and_type(email: str, domain_map: dict):
+    """
+    Returns (True, user_type) if email matches a domain
+    Returns (False, None) if no match
+    """
+    if not domain_map:
+        return True, None  # fallback / allow-all case
+
+    for user_type, domain in domain_map.items():
+        if email.endswith(domain):
+            return True, user_type
+
+    return False, None
 
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
@@ -60,18 +88,18 @@ class RegistrationSerializer(UserCreateSerializer):
             "email",
             "password",
             "re_password",
-            "edu_mail",
+            "professional_email",
             "type",
         )
 
     def create(self, validated_data):
-        edu_mail = validated_data.pop('edu_mail', None)
+        professional_email = validated_data.pop('professional_email', None)
         user_type = validated_data.pop('type', None)
 
         user = models.User.objects.create_user(**validated_data)
 
-        if edu_mail:
-            user.edu_mail = edu_mail
+        if professional_email:
+            user.professional_email = professional_email
         if user_type:
             user.type = user_type
 
@@ -80,38 +108,55 @@ class RegistrationSerializer(UserCreateSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    
+    
     re_password = serializers.CharField(write_only=True, required=True)
+    institute = serializers.PrimaryKeyRelatedField(
+        queryset=Institute.objects.filter(is_active=True),
+        required=False,
+        allow_null=True
+    )
+    user_type = None
 
     class Meta:
         model = models.User
         fields = ["id", "username", "email", "password",
-                  "re_password", "edu_mail", "type",]
+                  "re_password", "institute", "professional_email"]
         extra_kwargs = {
-            'username': {'required': True, 'validators': []},
+            'username': {'required': True, 'validators': [UnicodeUsernameValidator()]},
             'password': {'write_only': True},
             'email': {'required': True, 'validators': []},
-            'edu_mail': {'required': True, 'validators': []},
-            'gender': {'required': True}
+            'professional_email': {'required': False},
         }
 
     def validate(self, data):
+        print("Validating registration data:", data)
 
         if ' ' in data['username']:
             raise serializers.ValidationError(
                 {'username': 'Username should not contain any spaces'}
             )
+        
+        
 
-        if data['type'] in ['student', 'alumni']:
-            if not match_emails(data['edu_mail'], EDUCATION_EMAIL_DOMAINS):
-                raise serializers.ValidationError({
-                    'edu_mail': 'Education e-mail must be a valid student e-mail address'
-                })
+        institute = data.get('institute')
+        professional_email = data.get('professional_email')
 
-        if data['type'] in ['faculty', 'staff']:
-            if not match_emails(data['edu_mail'], PROFESSIONAL_EMAIL_DOMAINS):
-                raise serializers.ValidationError({
-                    'edu_mail': f'Professional e-mail must be a valid {data['type']} e-mail address'
-                })
+        if institute:
+            domain_list = get_email_domain_list(institute)
+            print("Domain List:", domain_list)
+            if domain_list:
+                if not professional_email:
+                    raise serializers.ValidationError({
+                        'professional_email': 'Professional e-mail is required for this institute'
+                    })
+                    
+                matched, target_type = match_email_and_type(professional_email, domain_list)
+                if not matched:
+                    raise serializers.ValidationError({
+                        'professional_email': 'Professional e-mail must be a valid institute e-mail address'
+                    })
+                data['type'] = target_type
 
         if data['password'] != data['re_password']:
             raise serializers.ValidationError(
@@ -125,9 +170,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"email": "Email already exists"})
 
-        if models.User.objects.filter(edu_mail=data['edu_mail']).exists():
+        if data.get('professional_email') and models.User.objects.filter(professional_email=data['professional_email']).exists():
             raise serializers.ValidationError(
-                {"edu_mail": "Education e-mail already exists"})
+                {"professional_email": "Professional e-mail already exists"})
 
         try:
             validate_password(
@@ -188,6 +233,8 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
 
 class UserClubMembershipSerializer(serializers.ModelSerializer):
     """Serializer for user's club memberships"""
+    from apps.clubs.models import Club, Membership
+    
     club_id = serializers.CharField(source='club.id', read_only=True)
     club_name = serializers.CharField(source='club.name', read_only=True)
     club_slug = serializers.CharField(source='club.slug', read_only=True)
@@ -265,6 +312,14 @@ class UserClubMembershipSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Detailed user profile with club, post, and follow information"""
+    # Personal info
+    department = serializers.SerializerMethodField()
+    # Institute info
+    institute = serializers.CharField(
+        source='institute.name', read_only=True)
+    institute_id = serializers.CharField(
+        source='institute.id', read_only=True
+    )
     # Club stats
     club_count = serializers.SerializerMethodField()
     clubs = serializers.SerializerMethodField()
@@ -306,8 +361,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         visible_fields = [
-            'id', 'username', 'first_name', 'last_name', 'email', 'edu_mail', 'url',
-            'student_id', 'department', 'year', 'level', 'type', 'preferred_email',
+            'id', 'username', 'first_name', 'last_name', 'email', 'professional_email', 'url', 'institute',
+            'institute_id', 'student_id', 'department', 'year', 'level', 'type', 'preferred_email',
             'profile_picture_url', 'avatar', 'bio', 'location', 'website', 'date_of_birth',
             'email_verified', 'is_private', 'status', 'is_status_manual',
             'club_count', 'clubs', 'clubs_url',
@@ -322,7 +377,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = models.User
         fields = visible_fields
         read_only_fields = [
-            'id', 'email', 'edu_mail', 'email_verified',
+            'id', 'email', 'professional_email', 'email_verified',
             'created_at', 'updated_at', 'last_login'
         ]
 
@@ -362,6 +417,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request:
             return request.build_absolute_uri(f'/api/v1/accounts/auth/{obj.id}/')
+        return None
+    
+    def get_department(self, obj):
+        if obj.department:
+            return obj.department.code
         return None
 
     def get_clubs_url(self, obj):

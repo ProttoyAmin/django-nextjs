@@ -7,6 +7,11 @@ import Label from "../atoms/Label";
 import Button from "../atoms/Button";
 import FilePreview from "../atoms/FilePreview";
 import "../components.css";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ZodSchema, ZodTypeDef } from "zod/v3";
+import { ZodType } from "zod";
+import ProgressBar from "../atoms/ProgressBar";
 
 export interface FormField {
   name?: string;
@@ -49,6 +54,7 @@ export interface FormField {
 
 interface FormProps {
   fields: FormField[];
+  schema?: ZodType<any, ZodTypeDef, any>;
   onSubmit: (data: any) => void;
   onChange?: (data: any) => void;
   submitButton?: {
@@ -108,7 +114,6 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   const [showCustom, setShowCustom] = useState(false);
   const [customColor, setCustomColor] = useState(value || "#3b82f6");
 
-  // Check if current value is a custom color (not in predefined options)
   useEffect(() => {
     const isCustomColor = !options.some((option) => option.value === value);
     if (isCustomColor && value) {
@@ -141,7 +146,6 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* Predefined color options */}
       <div className="flex flex-wrap gap-2">
         {options.map((color) => (
           <button
@@ -294,6 +298,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
 
 function Form({
   fields,
+  schema,
   onSubmit,
   onChange,
   submitButton = {
@@ -312,25 +317,30 @@ function Form({
   children,
   customSubmitButton,
 }: FormProps) {
-  const formDefaultValues = fields.reduce((acc, field) => {
-    // For color field, use default color if provided
-    if (
-      field.type === "color" &&
-      !field.default &&
-      !defaultValues[field.name!]
-    ) {
-      acc[field.name!] = DEFAULT_COLOR_OPTIONS[0].value; // Default to first color
-    } else {
-      acc[field.name!] =
-        field.default !== undefined
-          ? field.default
-          : defaultValues[field.name!] || "";
-    }
-    return acc;
-  }, {} as Record<string, any>);
+  const [isVisible, setIsVisible] = useState(false);
+  const formDefaultValues = fields.reduce(
+    (acc, field) => {
+      // For color field, use default color if provided
+      if (
+        field.type === "color" &&
+        !field.default &&
+        !defaultValues[field.name!]
+      ) {
+        acc[field.name!] = DEFAULT_COLOR_OPTIONS[0].value; // Default to first color
+      } else {
+        acc[field.name!] =
+          field.default !== undefined
+            ? field.default
+            : defaultValues[field.name!] || "";
+      }
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
 
   const formMethods = useForm({
     defaultValues: formDefaultValues,
+    resolver: schema ? zodResolver(schema) : undefined,
   });
 
   const {
@@ -357,7 +367,6 @@ function Form({
     const subscription = watch((value) => {
       onChange(value);
     });
-
     return () => subscription.unsubscribe();
   }, [watch, onChange]);
 
@@ -389,7 +398,7 @@ function Form({
           /^#([0-9A-F]{3}){1,2}$/i.test(value) ||
           /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/i.test(value) ||
           /^rgba\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d*(?:\.\d+)?)\)$/i.test(
-            value
+            value,
           );
 
         if (!isValidColor && field.required && value) {
@@ -472,11 +481,11 @@ function Form({
       // Check if it's a valid color format
       const isValidHex = /^#([0-9A-F]{3}){1,2}$/i.test(color);
       const isValidRgb = /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/i.test(
-        color
+        color,
       );
       const isValidRgba =
         /^rgba\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d*(?:\.\d+)?)\)$/i.test(
-          color
+          color,
         );
 
       if (!isValidHex && !isValidRgb && !isValidRgba) {
@@ -713,6 +722,59 @@ function Form({
           />
         );
 
+      case "password":
+        return (
+          <>
+            <div className="relative">
+              <Input
+                id={field.name!}
+                type={isVisible ? "text" : "password"}
+                label={field.floatingLabel ? field.label : undefined}
+                floatingLabel={field.floatingLabel}
+                disabled={isSubmitting}
+                placeholder={field.placeholder}
+                error={errors[field.name!] as any}
+                className={`${field.className}`}
+                {...register(field.name!, {
+                  required: field.required
+                    ? `${field.label} is required`
+                    : false,
+                  ...field.validation,
+                  onChange: (e) => handleFieldChange(field, e.target.value),
+                })}
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                {isVisible ? (
+                  <EyeIcon
+                    opacity={0.5}
+                    size={16}
+                    className="cursor-pointer text-gray-500"
+                    onClick={() => setIsVisible(!isVisible)}
+                  />
+                ) : (
+                  <EyeOffIcon
+                    opacity={0.5}
+                    size={16}
+                    className="cursor-pointer text-gray-500"
+                    onClick={() => setIsVisible(!isVisible)}
+                  />
+                )}
+              </div>
+            </div>
+            {watchedValues[field.name!]?.length > 1 && (
+              <ProgressBar
+                password={
+                  watchedValues[field.name!]?.length > 1
+                    ? watchedValues[field.name!]
+                    : ""
+                }
+                showText={false}
+                height="1px"
+              />
+            )}
+          </>
+        );
+
       default:
         return (
           <Input
@@ -743,7 +805,7 @@ function Form({
             <div
               key={field.name}
               className={`form-field ${getColSpanClass(
-                field.layout?.colSpan
+                field.layout?.colSpan,
               )} ${field.layout?.className || ""}`}
             >
               {!field.floatingLabel && field.type !== "color" && (

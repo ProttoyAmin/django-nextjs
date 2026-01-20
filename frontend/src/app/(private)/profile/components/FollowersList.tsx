@@ -42,10 +42,9 @@ function FollowersList({ user, currentUser }: FollowersListProps) {
         const response = await getFollowers(user.id);
 
         if (response.success) {
-
           const followersData = response.data?.results || response.data || [];
 
-          dispatch(setUpFollowers(followersData))
+          dispatch(setUpFollowers(followersData));
           setFollowers(followersData);
           hasFetchedRef.current = true;
 
@@ -91,23 +90,30 @@ function FollowersList({ user, currentUser }: FollowersListProps) {
         {followers.map((follower, index) => (
           <div
             key={follower.user_id}
-            className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 transform ${itemsVisible
-              ? "opacity-100 translate-x-0"
-              : "opacity-0 translate-x-4"
-              }`}
+            className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 transform ${
+              itemsVisible
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-4"
+            }`}
             style={{
-              transitionDelay: itemsVisible ? `${index * 50}ms` : "0ms"
+              transitionDelay: itemsVisible ? `${index * 50}ms` : "0ms",
             }}
           >
             <Link
               href={`/${follower?.username}`}
               className="flex items-center gap-3 flex-1"
             >
-              <SizeAvatars user={follower} size={40} badgeSize="8px" />
+              <SizeAvatars
+                user={follower as UserType}
+                size={40}
+                badgeSize="8px"
+              />
               <div className="flex-1">
                 <p className="font-semibold text-sm">{follower.username}</p>
                 {follower.first_name && (
-                  <p className="text-xs text-gray-500">{follower.first_name + " " + follower.last_name}</p>
+                  <p className="text-xs text-gray-500">
+                    {follower.first_name + " " + follower.last_name}
+                  </p>
                 )}
               </div>
             </Link>
@@ -118,15 +124,21 @@ function FollowersList({ user, currentUser }: FollowersListProps) {
               variant="default"
               showConfirmOnUnfollow={true}
               onFollowChange={(isFollowing, status) => {
-                setFollowers(prev => prev.map(f =>
-                  f.user_id === follower.user_id
-                    ? {
-                      ...f,
-                      you_follow_them: isFollowing,
-                      your_follow_status: status as "accepted" | "pending" | "blocked" | null
-                    }
-                    : f
-                ));
+                setFollowers((prev) =>
+                  prev.map((f) =>
+                    f.user_id === follower.user_id
+                      ? {
+                          ...f,
+                          you_follow_them: isFollowing,
+                          your_follow_status: status as
+                            | "accepted"
+                            | "pending"
+                            | "blocked"
+                            | null,
+                        }
+                      : f,
+                  ),
+                );
               }}
             />
           </div>

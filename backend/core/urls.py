@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('__debug__/', include('debug_toolbar.urls')),
     path('api/v1/accounts/', include('apps.accounts.urls')),
+    path('api/v1/institutes/', include('apps.institutes.urls')),
     path('api/v1/clubs/', include('apps.clubs.urls')),
     path('api/v1/activities/', include('apps.interactions.urls')),
     path('api/v1/posts/', include('apps.posts.urls')),

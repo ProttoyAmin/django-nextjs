@@ -2,7 +2,7 @@ export interface EditProfileType {
   first_name: string
   last_name: string
   email: string
-  edu_mail: string | null
+  professional_email: string | null
   student_id: string | null
   department: string | null
   year: string | null
@@ -48,7 +48,7 @@ export const PROFILE_FORM_FIELDS: FormFieldConfig[] = [
     validation: { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
   },
   {
-    name: "edu_mail",
+    name: "professional_email",
     label: "Educational Email",
     placeholder: "your.name@university.edu",
     type: "email",

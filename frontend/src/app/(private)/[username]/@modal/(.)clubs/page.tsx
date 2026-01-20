@@ -16,9 +16,6 @@ function ClubsModal() {
   const [clubs, setClubs] = React.useState<any>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
 
-  console.log("user", user);
-  console.log("currentUser", currentUser);
-
   React.useEffect(() => {
     const fetchClubs = async () => {
       const response = await getUserClubs(user?.id);

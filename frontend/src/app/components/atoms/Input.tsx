@@ -4,6 +4,7 @@ import { FieldError } from "react-hook-form";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   id: string;
+  type?: string;
   label?: string;
   error?: FieldError;
   floatingLabel?: boolean;
@@ -14,6 +15,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
       id,
+      type,
       label,
       error,
       floatingLabel = true,
@@ -21,7 +23,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       defaultValue,
       ...props
     },
-    ref
+    ref,
   ) => {
     if (floatingLabel) {
       return (
@@ -29,6 +31,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             id={id}
             ref={ref}
+            type={type}
             {...props}
             className={`
               peer block w-full px-0 py-2 border-0 border-b-2 
@@ -92,6 +95,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           id={id}
           ref={ref}
+          type={type}
           {...props}
           className={`
             w-full px-3 py-2 border rounded-lg
@@ -107,7 +111,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         />
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = "Input";

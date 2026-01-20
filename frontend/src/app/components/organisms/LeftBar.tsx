@@ -129,7 +129,7 @@ function LeftBar({ items, type }: LeftBarProps) {
         setUser({
           status: newStatus,
           is_status_manual: newStatus !== "online",
-        } as UserType)
+        } as UserType),
       );
     } catch (error) {
       console.warn(error);
@@ -210,7 +210,7 @@ function LeftBar({ items, type }: LeftBarProps) {
                       <SizeAvatars
                         user={user}
                         size={20}
-                        className={`border-2 rounded-full p-0.5 ${
+                        className={`border-2 rounded-full ${
                           isActive(`/${user?.username}`)
                             ? "border-white "
                             : "border-transparent"
@@ -280,7 +280,7 @@ function LeftBar({ items, type }: LeftBarProps) {
                         className="flex items-center gap-2 cursor-pointer hover:bg-[#28292a] h-15 px-5 rounded-2xl"
                         onClick={() => {
                           handleStatusChange(
-                            status.toLowerCase() as StatusType
+                            status.toLowerCase() as StatusType,
                           );
                         }}
                       >

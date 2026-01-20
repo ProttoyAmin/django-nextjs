@@ -6,7 +6,6 @@ from datetime import timedelta
 from core.generate import generate_snowflake_id
 # from apps.accounts.models import User
 from apps.posts.models import Post
-from apps.interactions.models import Like, Comment, Share
 from django.conf import settings
 
 
@@ -20,17 +19,19 @@ class Club(models.Model):
     id = models.BigIntegerField(
         primary_key=True, default=generate_snowflake_id, editable=False)
     name = models.CharField(max_length=100)
-    origin = models.CharField(
-        max_length=50,
-        blank=False,
-        null=False,
-        help_text="Origin/location of the club (e.g., 'BRACU', 'International', 'Online')"
+    origin = models.ForeignKey(
+        "institutes.Institute",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="clubs",
+        help_text="Null means local / global / cross-institute club"
     )
     about = models.TextField(blank=True, null=True)
     slug = models.SlugField(max_length=120, unique=True, blank=True)
     avatar = models.URLField(blank=True, null=True)
     banner = models.URLField(blank=True, null=True)
-    is_public = models.BooleanField(default=True)
+    is_public = models.BooleanField(default=True, help_text="True if club is open to all institutes")
     is_visible = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     owner = models.ForeignKey(
@@ -60,7 +61,7 @@ class Club(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'origin'],
-                name='unique_name_origin_per_club'
+                name='unique_club_per_institute'
             )
         ]
 

@@ -45,7 +45,7 @@ function StaffForm() {
             floatingLabel: true
         },
         {
-            name: 'edu_mail',
+            name: 'professional_email',
             type: 'email',
             label: 'Professional Email',
             placeholder: 'Enter professional email',

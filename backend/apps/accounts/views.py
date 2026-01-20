@@ -12,6 +12,7 @@ from rest_framework_simplejwt.authentication import JWTStatelessUserAuthenticati
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import generics, mixins
+from django.conf import settings
 from . import serializers, models
 from core.pagination import PageNumberPagination
 from apps.posts.serializers import PostSerializer, PostListSerializer
@@ -165,7 +166,7 @@ def manage_email_preference(request):
         return Response({
             'preferred_email': user.preferred_email,
             'email': user.email,
-            'edu_mail': user.edu_mail,
+            'professional_email': user.professional_email,
             'current_notification_email': user.get_notification_email()
         }, status=status.HTTP_200_OK)
 
@@ -177,13 +178,13 @@ def manage_email_preference(request):
                 'message': 'preferred_email field is required'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        if preferred_email not in ['email', 'edu_mail']:
+        if preferred_email not in ['email', 'professional_email']:
             return Response({
-                'message': 'preferred_email must be either "email" or "edu_mail"'
+                'message': 'preferred_email must be either "email" or "professional_email"'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # Validate that the chosen email exists
-        if preferred_email == 'edu_mail' and not user.edu_mail:
+        if preferred_email == 'professional_email' and not user.professional_email:
             return Response({
                 'message': 'You do not have an educational email set'
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -210,7 +211,7 @@ def get_users(request):
             status=status.HTTP_204_NO_CONTENT
         )
 
-    visible_fields = ['id', 'username', 'email', 'edu_mail', 'url']
+    visible_fields = ['id', 'username', 'email', 'professional_email', 'url']
 
     serializer = serializers.UserProfileSerializer(
         users,
@@ -308,10 +309,13 @@ def get_user_profile(request, user_id):
 
 
 @api_view(['GET'])
-@permission_classes([permissions.AllowAny])
+@permission_classes([permissions.IsAuthenticated])
 def get_user_clubs(request, user_id):
     """Get all clubs a user has joined"""
+    from apps.clubs.serializers import ClubListSerializer
+    
     user = get_object_or_404(models.User, pk=user_id)
+    print("user", user)
 
     if user.is_private and request.user != user:
         if not request.user.is_authenticated:
@@ -331,6 +335,18 @@ def get_user_clubs(request, user_id):
                 {'detail': 'This profile is private. You must follow this user to view their clubs.'},
                 status=status.HTTP_403_FORBIDDEN
             )
+            
+        return Response(
+            {'detail': 'This profile is private.',
+             'username': user.username,
+             'avatar' : request.build_absolute_uri(user.profile_picture.url) if user.profile_picture else None,
+             'is_private': user.is_private
+             },
+            status=status.HTTP_403_FORBIDDEN
+        )
+        
+    clubs = user.owned_clubs.all()
+    
 
     memberships = Membership.objects.filter(
         user=user
@@ -339,12 +355,17 @@ def get_user_clubs(request, user_id):
     role_name = request.query_params.get('role')
     if role_name:
         memberships = memberships.filter(role__name__iexact=role_name)
-
     serializer = serializers.UserClubMembershipSerializer(
         memberships,
         many=True,
         context={'request': request}
     )
+    
+    # serializer = ClubListSerializer(
+    #     clubs,
+    #     many=True,
+    #     context={'request': request}
+    # )
 
     return Response({
         'user_id': user.id,

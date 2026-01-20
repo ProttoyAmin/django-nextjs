@@ -12,17 +12,17 @@ class CustomActivationEmail(email.ActivationEmail):
         context = super().get_context_data()
         user = context.get("user")
 
-        # For student, faculty, staff - use edu_mail
-        if user and user.type in ['student', 'faculty', 'staff'] and user.edu_mail:
-            context["email"] = user.edu_mail
+        # For student, faculty, staff - use professional_email
+        if user and user.type in ['student', 'faculty', 'staff'] and user.professional_email:
+            context["email"] = user.professional_email
         return context
 
     def send(self, to, *args, **kwargs):
         user = self.context.get("user")
 
-        # For student, faculty, staff - send to edu_mail
-        if user and user.type in ['student', 'faculty', 'staff'] and user.edu_mail:
-            to = [user.edu_mail]
+        # For student, faculty, staff - send to professional_email
+        if user and user.type in ['student', 'faculty', 'staff'] and user.professional_email:
+            to = [user.professional_email]
         elif user:
             # For alumni, other - send to regular email
             to = [get_user_email(user)]
@@ -49,8 +49,8 @@ class CustomConfirmationEmail(email.ConfirmationEmail):
         user = self.context.get("user")
 
         # Use user's preferred email for password reset
-        if user and user.type in ['student', 'faculty', 'staff'] and user.edu_mail:
-            to = [user.edu_mail] if user.edu_mail else [get_user_email(user)]
+        if user and user.type in ['student', 'faculty', 'staff'] and user.professional_email:
+            to = [user.professional_email] if user.professional_email else [get_user_email(user)]
         elif user:
             to = [get_user_email(user)]
 
