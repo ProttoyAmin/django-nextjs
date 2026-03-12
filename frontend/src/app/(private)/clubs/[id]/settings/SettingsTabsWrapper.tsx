@@ -19,7 +19,7 @@ export default function SettingsTabsWrapper({
   clubId,
 }: SettingsTabsWrapperProps) {
   const user = useAppSelector((state) =>
-    state.user.currentUser?.clubs.find((club) => club.club_id === clubId)
+    state.user.currentUser?.clubs.find((club) => club.club_id === clubId),
   );
   let tabs;
   console.log(user?.role_permissions);
@@ -73,6 +73,14 @@ export default function SettingsTabsWrapper({
         label: "Roles",
         path: `/clubs/${clubId}/settings/roles`,
         icon: <Shield size={20} />,
+      },
+    ];
+  } else {
+    tabs = [
+      {
+        label: "Info",
+        path: `/clubs/${clubId}/settings/info`,
+        icon: <Info size={20} />,
       },
     ];
   }

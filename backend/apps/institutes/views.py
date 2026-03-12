@@ -53,3 +53,35 @@ def institute_list(request):
     )
     
     return paginator.get_paginated_response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def institute_info(request, pk):
+    requested_fields = request.query_params.get('fields')
+    field_list = None
+    
+    if requested_fields:
+        field_list = [field.strip() for field in requested_fields.split(',')]
+        if 'id' not in field_list:
+            field_list.append('id')
+    
+    institutes = models.Institute.objects.filter(pk=pk, is_active=True)
+    
+    if field_list:
+        institutes = institutes.only(*field_list)
+    
+    paginator = pagination.StandardResultsSetPagination()
+    paginated_institutes = paginator.paginate_queryset(institutes, request)
+    
+    context = {'request': request}
+    if field_list:
+        context['fields'] = field_list
+    
+    serializer = serializers.InstituteDetailSerializer(
+        paginated_institutes, 
+        many=True, 
+        context=context
+    )
+    
+    return paginator.get_paginated_response(serializer.data)

@@ -36,18 +36,35 @@ class NotificationActorSerializer(serializers.ModelSerializer):
 
 class NotificationTargetSerializer(serializers.ModelSerializer):
     """Serializer for notification targets (the content the notification is about)"""
-    target_type = serializers.SerializerMethodField()
-    target_id = serializers.IntegerField(source='object_id', read_only=True)
+    target_content_type = serializers.SerializerMethodField()
+    target_id = serializers.CharField(source='object_id', read_only=True)
     target_url = serializers.SerializerMethodField()
     target_preview = serializers.SerializerMethodField()
+    target_type = serializers.SerializerMethodField()
+    target_post_id = serializers.SerializerMethodField()
 
     class Meta:
         model = NotificationTarget
-        fields = ['target_type', 'target_id', 'target_url', 'target_preview']
+        fields = ['target_type', 'target_content_type',
+                  'target_id', 'target_post_id', 'target_url', 'target_preview']
 
     def get_target_type(self, obj):
-        """Get the type of target (post, comment, user, etc.)"""
+        """Get the notification target model type (Like, Comment, etc.)"""
         return obj.content_type.model
+
+    def get_target_content_type(self, obj):
+        """Get the actual content type being interacted with"""
+        try:
+            target = obj.content_object
+            if not target:
+                return obj.content_type.model
+
+            # If target is Like, return what was liked
+            if hasattr(target, 'content_type'):
+                return target.content_type.model
+            return obj.content_type.model
+        except Exception:
+            return obj.content_type.model
 
     def get_target_url(self, obj):
         """Build URL for the target based on its type"""
@@ -67,28 +84,78 @@ class NotificationTargetSerializer(serializers.ModelSerializer):
         return None
 
     def get_target_preview(self, obj):
-        """Get a preview of the target content"""
+        """Get a preview of the target content (image URL for posts)"""
+        try:
+            target = obj.content_object
+            if not target:
+                return None
+
+            request = self.context.get('request')
+            model_name = obj.content_type.model
+
+            # Handle different target models to find the related post
+            post = None
+            if model_name == 'post':
+                post = target
+            elif model_name == 'comment':
+                if hasattr(target, 'content_object') and target.content_type.model == 'post':
+                    post = target.content_object
+            elif model_name == 'like':
+                liked_item = target.content_object
+                if liked_item:
+                    liked_model = target.content_type.model
+                    if liked_model == 'post':
+                        post = liked_item
+                    elif liked_model == 'comment':
+                        if hasattr(liked_item, 'content_object') and liked_item.content_type.model == 'post':
+                            post = liked_item.content_object
+            elif model_name == 'share':
+                if hasattr(target, 'content_object') and target.content_type.model == 'post':
+                    post = target.content_object
+
+            # Return post image if found
+            if post and request:
+                if hasattr(post, 'image_file') and post.image_file:
+                    return request.build_absolute_uri(post.image_file.url)
+                elif hasattr(post, 'image_url') and post.image_url:
+                    return post.image_url
+
+            # Fallback to current behavior if no post/image
+            if model_name == 'user' and hasattr(target, 'avatar'):
+                return target.avatar
+
+            return None
+        except Exception:
+            return None
+
+    def get_target_post_id(self, obj):
+        """Get the ID of the related post"""
         try:
             target = obj.content_object
             if not target:
                 return None
 
             model_name = obj.content_type.model
+
+            # Handle different target models to find the related post
             if model_name == 'post':
-                return {
-                    'content': target.content[:100] if target.content else None,
-                    'post_type': target.post_type if hasattr(target, 'post_type') else None,
-                }
+                return str(target.id)
             elif model_name == 'comment':
-                return {
-                    'content': target.content[:100] if hasattr(target, 'content') else None,
-                }
-            elif model_name == 'user':
-                return {
-                    'username': target.username,
-                    'first_name': target.first_name,
-                    'last_name': target.last_name,
-                }
+                if hasattr(target, 'content_object') and target.content_type.model == 'post':
+                    return str(target.object_id)
+            elif model_name == 'like':
+                liked_item = target.content_object
+                if liked_item:
+                    liked_model = target.content_type.model
+                    if liked_model == 'post':
+                        return str(target.object_id)
+                    elif liked_model == 'comment':
+                        if hasattr(liked_item, 'content_object') and liked_item.content_type.model == 'post':
+                            return str(liked_item.object_id)
+            elif model_name == 'share':
+                if hasattr(target, 'content_object') and target.content_type.model == 'post':
+                    return str(target.object_id)
+
             return None
         except Exception:
             return None
@@ -157,8 +224,10 @@ class NotificationListSerializer(serializers.ModelSerializer):
     primary_actor = serializers.SerializerMethodField()
     actor_count = serializers.SerializerMethodField()
     target_type = serializers.SerializerMethodField()
+    target_content_type = serializers.SerializerMethodField()
     target_id = serializers.SerializerMethodField()
     target_preview = serializers.SerializerMethodField()
+    target_post_id = serializers.SerializerMethodField()
     notification_url = serializers.SerializerMethodField()
     message = serializers.SerializerMethodField()
 
@@ -167,7 +236,7 @@ class NotificationListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'verb', 'description', 'is_read', 'is_seen',
             'primary_actor', 'actor_count',
-            'target_type', 'target_id', 'target_preview',
+            'target_type', 'target_content_type', 'target_id', 'target_post_id', 'target_preview',
             'notification_url', 'message', 'created_at'
         ]
 
@@ -197,21 +266,90 @@ class NotificationListSerializer(serializers.ModelSerializer):
         return obj.actors.count()
 
     def get_target_type(self, obj):
-        """Get the type of the first target"""
+        """Get the notification target model type (Like, Comment, etc.)"""
         target = obj.targets.first()
         if target:
             return target.content_type.model
         return None
 
+    def get_target_content_type(self, obj):
+        """Get the actual content type being interacted with"""
+        target = obj.targets.first()
+        if not target:
+            return None
+
+        try:
+            content = target.content_object
+            if not content:
+                return target.content_type.model
+
+            # If target is Like, return what was liked
+            if hasattr(content, 'content_type'):
+                return content.content_type.model
+            return target.content_type.model
+        except Exception:
+            return target.content_type.model
+
     def get_target_id(self, obj):
         """Get the ID of the first target"""
         target = obj.targets.first()
         if target:
-            return target.object_id
+            return str(target.object_id)
         return None
 
     def get_target_preview(self, obj):
-        """Get a preview of the first target"""
+        """Get a preview of the first target (image URL for posts)"""
+        target = obj.targets.first()
+        if not target:
+            return None
+
+        try:
+            content = target.content_object  # This is the Like/Comment/Post object
+            if not content:
+                return None
+
+            request = self.context.get('request')
+            model_name = target.content_type.model
+
+            # Handle different target models to find the related post
+            post = None
+            if model_name == 'post':
+                post = content
+            elif model_name == 'comment':
+                if hasattr(content, 'content_object') and content.content_type.model == 'post':
+                    post = content.content_object
+            elif model_name == 'like':
+                liked_item = content.content_object
+                if liked_item:
+                    liked_model = content.content_type.model
+                    if liked_model == 'post':
+                        post = liked_item
+                    elif liked_model == 'comment':
+                        if hasattr(liked_item, 'content_object') and liked_item.content_type.model == 'post':
+                            post = liked_item.content_object
+            elif model_name == 'share':
+                if hasattr(content, 'content_object') and content.content_type.model == 'post':
+                    post = content.content_object
+
+            # Return post image if found
+            if post and request:
+                if hasattr(post, 'image_file') and post.image_file:
+                    return request.build_absolute_uri(post.image_file.url)
+                elif hasattr(post, 'image_url') and post.image_url:
+                    return post.image_url
+
+            # Fallback to current behavior (snippet) if no post/image found
+            if model_name == 'post':
+                return content.content[:100] if content.content else None
+            elif model_name == 'comment':
+                return content.content[:100] if hasattr(content, 'content') else None
+
+            return None
+        except Exception:
+            return None
+
+    def get_target_post_id(self, obj):
+        """Get the ID of the related post from the first target"""
         target = obj.targets.first()
         if not target:
             return None
@@ -222,10 +360,26 @@ class NotificationListSerializer(serializers.ModelSerializer):
                 return None
 
             model_name = target.content_type.model
+
+            # Handle different target models to find the related post
             if model_name == 'post':
-                return content.content[:100] if content.content else None
+                return str(content.id)
             elif model_name == 'comment':
-                return content.content[:100] if hasattr(content, 'content') else None
+                if hasattr(content, 'content_object') and content.content_type.model == 'post':
+                    return str(content.object_id)
+            elif model_name == 'like':
+                liked_item = content.content_object
+                if liked_item:
+                    liked_model = content.content_type.model
+                    if liked_model == 'post':
+                        return str(content.object_id)
+                    elif liked_model == 'comment':
+                        if hasattr(liked_item, 'content_object') and liked_item.content_type.model == 'post':
+                            return str(liked_item.object_id)
+            elif model_name == 'share':
+                if hasattr(content, 'content_object') and content.content_type.model == 'post':
+                    return str(content.object_id)
+
             return None
         except Exception:
             return None

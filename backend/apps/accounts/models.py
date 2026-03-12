@@ -44,7 +44,7 @@ class User(AbstractUser):
         related_name="users"
     )
     professional_email = models.EmailField(
-        unique=True, blank=True, null=True, default='')
+        unique=True, blank=True, null=True, default=None)
     student_id = models.CharField(unique=True, blank=True, null=True)
     department = models.ForeignKey(
         "institutes.Department",
@@ -71,7 +71,7 @@ class User(AbstractUser):
     website = models.URLField(blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     type = models.CharField(max_length=50, choices=USER_TYPES,
-                            blank=False, null=True, default=None)
+                            blank=True, null=True, default=None)
     preferred_email = models.CharField(
         max_length=20,
         choices=EMAIL_PREFERENCE_CHOICES,

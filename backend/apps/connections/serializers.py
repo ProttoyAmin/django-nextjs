@@ -134,6 +134,7 @@ class FollowStatusSerializer(serializers.Serializer):
     is_mutual = serializers.BooleanField()
     follow_status = serializers.CharField(
         allow_null=True)  # pending, accepted, blocked, None
+    verb = serializers.CharField()
 
 
 class UserFollowStatsSerializer(serializers.Serializer):

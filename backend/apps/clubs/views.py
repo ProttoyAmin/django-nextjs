@@ -109,6 +109,7 @@ def list_clubs(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def create_club(request):
+    from apps.institutes.models import Institute
     """
     Create a new club (any authenticated user can create)
     Required fields: name, origin
@@ -117,16 +118,19 @@ def create_club(request):
     serializer = serializers.ClubSerializer(data=request.data)
     if not serializer.is_valid():
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    print("Creating club with data:", serializer.validated_data)
 
     # Use transaction to ensure atomicity
     with transaction.atomic():
         club = serializer.save(owner=request.user)
 
         # Create default roles using the model's method
-        # models.Role.create_default_roles(club)
+        # default_role = models.Role.get_default_ownder_role(club)
+        # print("Default admin role for new club:", default_role)
 
         # Get the admin role to assign to creator
-        admin_role = club.roles.filter(name='Admin').first()
+        admin_role = club.roles.filter(name="Owner").first()
         if not admin_role:
             # Fallback if admin role doesn't exist - create owner role with all permissions
             admin_role = models.Role.objects.create(
@@ -148,7 +152,7 @@ def create_club(request):
             club=club
         )
         membership.add_role(admin_role, set_as_primary=True)
-
+        
     # Fetch with annotations for response
     club = models.Club.objects.annotate(
         member_count=Count('members', distinct=True),
@@ -832,10 +836,10 @@ def recommended_clubs(request):
     serializer = serializers.ClubListSerializer(
         clubs, many=True, context={'request': request}
     )
-    user_serializer = UserProfileSerializer(user)
+    # user_serializer = UserProfileSerializer(user)
 
     return response.Response({
-        'user': user_serializer.data,
+        # 'user': user_serializer.data,
         'user_id': user.id,
         'username': user.username,
         'recommendation_basis': 'engagement_and_popularity',

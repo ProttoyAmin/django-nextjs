@@ -29,7 +29,6 @@ export default function Layout({
               <ClubHeader />
             </div>
           </div>
-
           <div className="flex-1 relative">
             <SettingsTabsWrapper clubId={id} />
           </div>

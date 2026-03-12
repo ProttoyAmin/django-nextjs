@@ -10,6 +10,7 @@ import Link from "next/link";
 import Feed from "./components/organisms/Feed";
 import { setUser } from "../redux-store";
 import TabbedFeed from "./components/organisms/TabbedFeed";
+import { ModeToggle } from "./components/ModeToggle";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -96,6 +97,9 @@ export default function Home() {
     //   <Feed />
     // </div>
     <>
+      {/* <div className="flex justify-end">
+        <ModeToggle />
+      </div> */}
       <Feed />
       {/* <TabbedFeed /> */}
     </>

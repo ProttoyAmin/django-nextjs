@@ -17,7 +17,7 @@ import Form from "@/src/app/components/organisms/Form";
 import Button from "@/src/app/components/atoms/Button";
 import { Modal } from "@/src/app/components/organisms/Modal";
 import ListMembers from "../../components/ListMembers";
-import toast, { Toaster } from "react-hot-toast";
+import { toast, Toaster } from "sonner";
 
 function Roles() {
   const [activeTab, setActiveTab] = React.useState("display");
@@ -27,10 +27,10 @@ function Roles() {
   const clubId = id as string;
 
   const clubRolesData = useAppSelector(
-    (state: RootState) => state.roles.clubRoles
+    (state: RootState) => state.roles.clubRoles,
   );
   const members = useAppSelector(
-    (state: RootState) => state.club.members[clubId]
+    (state: RootState) => state.club.members[clubId],
   );
 
   const isLoading = useAppSelector((state: RootState) => state.roles.loading);
@@ -126,7 +126,7 @@ function Roles() {
                 <Loader className="animate-spin" />
               </div>
             ) : (
-              <ListRoles roles={roles!}/>
+              <ListRoles roles={roles!} />
             )}
           </div>
         </>
@@ -152,7 +152,7 @@ function Roles() {
         keepMounted={false}
       />
 
-      <Toaster
+      {/* <Toaster
         position="bottom-right"
         reverseOrder={false}
         toastOptions={{
@@ -163,7 +163,7 @@ function Roles() {
             color: "#fff",
           },
         }}
-      />
+      /> */}
     </div>
   );
 }

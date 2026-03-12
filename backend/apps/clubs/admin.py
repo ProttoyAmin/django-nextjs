@@ -27,7 +27,7 @@ class MembershipInline(admin.TabularInline):
 class ClubAdmin(admin.ModelAdmin):
     list_display = ('name', 'owner', 'origin',
                     'is_public', 'is_active', 'created_at')
-    list_filter = ('privacy', 'is_public', 'is_active')
+    list_filter = ('privacy', 'origin', 'is_public', 'is_active')
     search_fields = ('name', 'origin', 'owner__username')
     inlines = [RoleInline, MembershipInline]
     raw_id_fields = ('owner',)

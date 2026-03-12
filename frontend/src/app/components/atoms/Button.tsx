@@ -31,7 +31,7 @@ function Button({
     outline:
       "bg-transparent text-gray-400 border-gray-400 hover:text-white hover:bg-gray-800 focus:ring-0 shadow-none min-h-0 p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-900/30",
     ghostDanger:
-      "bg-transparent text-red-400 border-transparent hover:text-white hover:bg-red-800 focus:ring-0 shadow-none min-h-0 p-2 text-red-400 hover:text-red-500 hover:bg-red-900/30",
+      "bg-transparent text-red-400 border-transparent hover:text-red-500 focus:ring-0 shadow-none min-h-0 p-2 text-red-400",
     warning:
       "bg-transparent text-yellow-400 border-yellow-400 hover:text-white hover:bg-yellow-800 focus:ring-0 shadow-none min-h-0 p-2 text-yellow-400 hover:text-yellow-500 hover:bg-yellow-900/30",
     info: "bg-transparent text-blue-400 border-blue-400 hover:text-white hover:bg-blue-800 focus:ring-0 shadow-none min-h-0 p-2 text-blue-400 hover:text-blue-500 hover:bg-blue-900/30",

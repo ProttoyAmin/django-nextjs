@@ -1,7 +1,12 @@
 // Form component with enhanced layout support, file handling, and color picker
 "use client";
 import React, { useState, useEffect } from "react";
-import { useForm, FieldValues, UseFormReturn } from "react-hook-form";
+import {
+  useForm,
+  FieldValues,
+  UseFormReturn,
+  Controller,
+} from "react-hook-form";
 import Input from "../atoms/Input";
 import Label from "../atoms/Label";
 import Button from "../atoms/Button";
@@ -12,10 +17,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ZodSchema, ZodTypeDef } from "zod/v3";
 import { ZodType } from "zod";
 import ProgressBar from "../atoms/ProgressBar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Combobox,
+  ComboboxCollection,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 
 export interface FormField {
   name?: string;
   label?: string;
+  score?: boolean;
   type?:
     | "text"
     | "email"
@@ -30,11 +52,13 @@ export interface FormField {
     | "select"
     | "checkbox"
     | "radio"
+    | "combobox"
     | "color";
   required?: boolean;
   default?: string | number | boolean | FileList | File[];
   validation?: any;
   placeholder?: string;
+  info?: boolean;
   floatingLabel?: boolean;
   className?: string;
   layout?: {
@@ -46,7 +70,6 @@ export interface FormField {
   multiple?: boolean;
   options?: Array<{ value: string; label: string }>;
   onChange?: (value: any) => void;
-  // Color field specific properties
   colorOptions?: Array<{ value: string; name: string; hex: string }>;
   showCustomInput?: boolean;
   allowCustomColors?: boolean;
@@ -586,37 +609,160 @@ function Form({
           </div>
         );
 
+      // case "select":
+      //   console.log("watched values: ", watchedValues);
+      //   return (
+      //     <>
+      //       {/* <select
+      //         id={field.name}
+      //         disabled={isSubmitting}
+      //         className={`bg-[#1f1f1f] w-full px-3 py-2 border border-transparent focus:outline-none focus:ring-2 focus:ring-amber-50 ${
+      //           errors[field.name!] ? "border-red-500" : "border-gray-300"
+      //         } ${field.className}`}
+      //         {...register(field.name!, {
+      //           required: field.required ? `${field.label} is required` : false,
+      //           ...field.validation,
+      //           onChange: (e) => handleFieldChange(field, e.target.value),
+      //         })}
+      //       >
+      //         <option value="" className="">
+      //           {field.placeholder}
+      //         </option>
+      //         {field.options?.map((option) => (
+      //           <option
+      //             key={option.value}
+      //             className="text-sm"
+      //             value={option.value}
+      //           >
+      //             {option.label}
+      //           </option>
+      //         ))}
+      //       </select> */}
+      //       <Select
+      //         disabled={isSubmitting}
+      //         {...register(field.name!, {
+      //           required: field.required ? `${field.label} is required` : false,
+      //           ...field.validation,
+      //           onChange: (e) => handleFieldChange(field, e.target.value),
+      //         })}
+      //       >
+      //         <SelectTrigger className="w-[180px]">
+      //           <SelectValue placeholder={field.placeholder}/>
+      //         </SelectTrigger>
+      //         <SelectContent>
+      //           {field.options?.map((option) => (
+      //             <SelectItem key={option.value} value={option.value}>
+      //               {option.label}
+      //             </SelectItem>
+      //           ))}
+      //         </SelectContent>
+      //       </Select>
+      //       {watchedValues[field.name!] === "alumni" && (
+      //         <p className="text-gray-400 text-xs mt-1">
+      //           * Note: Alumnis will authenticate with the regular email you
+      //           provided.
+      //         </p>
+      //       )}
+      //     </>
+      //   );
+
+      case "combobox":
+        return (
+          <Controller
+            name={field.name!}
+            control={formMethods.control}
+            rules={{
+              required: field.required ? `${field.label} is required` : false,
+              ...field.validation,
+            }}
+            render={({ field: rhfField }) => {
+              const selectedOption = field.options?.find(
+                (opt) => opt.value === rhfField.value,
+              );
+
+              return (
+                <div className="w-full">
+                  <Combobox
+                    value={rhfField.value}
+                    onValueChange={(value) => {
+                      rhfField.onChange(value);
+                      field.onChange?.(value);
+                    }}
+                  >
+                    <ComboboxInput
+                      value={selectedOption?.label ?? ""}
+                      placeholder={field.placeholder || "Select or search..."}
+                      disabled={isSubmitting}
+                      className="w-full"
+                      showTrigger
+                      showClear={!!rhfField.value}
+                    />
+
+                    <ComboboxContent>
+                      <ComboboxList>
+                        {(field.options ?? []).map((option) => (
+                          <ComboboxItem key={option.value} value={option.value}>
+                            {option.label}
+                          </ComboboxItem>
+                        ))}
+                      </ComboboxList>
+
+                      {/* <ComboboxEmpty>No items found.</ComboboxEmpty> */}
+                    </ComboboxContent>
+                  </Combobox>
+                </div>
+              );
+            }}
+          />
+        );
+
       case "select":
+        console.log(watchedValues);
+        const fieldValue = watchedValues[field.name!] || "";
+
         return (
           <>
-            <select
-              id={field.name}
+            <Select
+              value={fieldValue}
+              onValueChange={(value) => {
+                setValue(field.name!, value, { shouldValidate: true });
+                if (field.onChange) {
+                  field.onChange(value);
+                }
+              }}
               disabled={isSubmitting}
-              className={`bg-[#1f1f1f] w-full px-3 py-2 border border-transparent focus:outline-none focus:ring-2 focus:ring-amber-50 ${
-                errors[field.name!] ? "border-red-500" : "border-gray-300"
-              } ${field.className}`}
+              required={field.required}
+            >
+              <SelectTrigger
+                className={`w-full bg-[#1f1f1f]${
+                  errors[field.name!] ? "border-red-500" : "border-gray-300"
+                } ${field.className}`}
+              >
+                <SelectValue
+                  placeholder={field.placeholder || "Select an option"}
+                />
+              </SelectTrigger>
+              <SelectContent className="">
+                {field.options?.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Hidden input for react-hook-form validation */}
+            <input
+              type="hidden"
               {...register(field.name!, {
                 required: field.required ? `${field.label} is required` : false,
                 ...field.validation,
-                onChange: (e) => handleFieldChange(field, e.target.value),
               })}
-            >
-              <option value="" className="">
-                {field.label}
-              </option>
-              {field.options?.map((option) => (
-                <option
-                  key={option.value}
-                  className="text-sm"
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            />
+
             {watchedValues[field.name!] === "alumni" && (
               <p className="text-gray-400 text-xs mt-1">
-                * Note: Alumnis will authenticate with the regular email you
+                * Note: Alumni will authenticate with the regular email
                 provided.
               </p>
             )}
@@ -761,7 +907,7 @@ function Form({
                 )}
               </div>
             </div>
-            {watchedValues[field.name!]?.length > 1 && (
+            {watchedValues[field.name!]?.length > 1 && field.score && (
               <ProgressBar
                 password={
                   watchedValues[field.name!]?.length > 1

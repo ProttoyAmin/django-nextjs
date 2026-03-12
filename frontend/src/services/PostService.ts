@@ -19,7 +19,6 @@ export class PostService {
 
   async createPost(postData: CreatePostRequest): Promise<CreatePostResponse> {
     const hasFiles = postData.image_file instanceof File || postData.video_file instanceof File;
-    console.log("has files? ", hasFiles)
     if (hasFiles) {
       const formData = new FormData();
 
@@ -30,12 +29,8 @@ export class PostService {
           formData.append(key, String(value));
         }
       });
-      console.log("post data: ", formData)
-      console.log(this.apiClient)
-
       return this.apiClient.request<CreatePostResponse>('create-with-media/', 'POST', formData, true);
     } else {
-      console.log("text data: ", postData)
       return this.apiClient.request<CreatePostResponse>('create/', 'POST', postData);
     }
   }

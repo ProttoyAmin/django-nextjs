@@ -14,7 +14,7 @@ interface ProfileTimelineProps {
   isAuthenticated?: boolean;
   onProtectedAction?: (
     action: () => Promise<void>,
-    actionName?: string
+    actionName?: string,
   ) => void;
 }
 
@@ -103,7 +103,7 @@ export default function ProfileTimeline({
               if (!isAuthenticated && tab.id !== "posts") {
                 onProtectedAction?.(
                   async () => setActiveTab(tab.id),
-                  "switch tab"
+                  "switch tab",
                 );
                 return;
               }

@@ -7,7 +7,7 @@ import {
 } from "@/src/redux-store/slices/notifications";
 import React from "react";
 import NotificationItem from "../../components/molecules/NotificationItem";
-import { Loader } from "lucide-react";
+import { BellIcon, Loader } from "lucide-react";
 import Button from "../../components/atoms/Button";
 
 function ActivitiesPage() {
@@ -49,7 +49,9 @@ function ActivitiesPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center p-8">
         <div className="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mb-4">
-          <span className="text-3xl">🔔</span>
+          <span className="text-3xl">
+            <BellIcon size={24} />
+          </span>
         </div>
         <h3 className="text-xl font-semibold text-white mb-2">
           No activities yet
@@ -63,19 +65,21 @@ function ActivitiesPage() {
 
   return (
     <div className="flex flex-col">
-      <Button
-        onClick={() => dispatch(markAllAsReadThunk())}
-        variant="secondary"
-        name="Mark all as read"
-      />
-      {results.map((notification) => (
-        <NotificationItem key={notification.id} notification={notification} />
-      ))}
       {loading && (
         <div className="p-4 text-center">
           <Loader className="animate-spin mx-auto text-gray-500" size={24} />
         </div>
       )}
+      {results?.length > 0 && (
+        <Button
+          onClick={() => dispatch(markAllAsReadThunk())}
+          variant="secondary"
+          name="Mark all as read"
+        />
+      )}
+      {results.map((notification) => (
+        <NotificationItem key={notification?.id} notification={notification} />
+      ))}
     </div>
   );
 }

@@ -322,6 +322,16 @@ export async function getUserActivity(userId: string | number, limit: number = 1
     return response.data;
   });
 }
+export async function connectUserToInstitute(data: any) {
+  return authenticatedRequest(async (token) => {
+    const response = await api.post(`validate/`, data, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    return response.data;
+  });
+}
 
 
 

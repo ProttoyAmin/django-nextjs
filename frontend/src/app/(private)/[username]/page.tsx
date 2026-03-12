@@ -52,7 +52,7 @@ export default function UserProfilePage() {
             isMutual: user.is_mutual || false,
             followStatus: user.follow_status || null,
           },
-        })
+        }),
       );
     }
   }, [user, dispatch]);
@@ -69,7 +69,7 @@ export default function UserProfilePage() {
 
   const handleProtectedAction = async (
     action: () => Promise<void>,
-    actionName: string = "action"
+    actionName: string = "action",
   ) => {
     if (!isAuthenticated) {
       alert("Please log in first");
@@ -119,6 +119,7 @@ export default function UserProfilePage() {
             user={user}
             isCurrentUser={isCurrentUser}
             isAuthenticated={isAuthenticated}
+            canViewPosts={canView}
             onProtectedAction={handleProtectedAction}
           />
           {/* <UserProfile

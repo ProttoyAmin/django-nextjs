@@ -13,14 +13,15 @@ export interface Notification {
     } | null,
     actor_count: number,
     target_type: string,
+    target_content_type: string,
     target_id: string,
+    target_post_id: string,
     target_preview: string | null,
     notification_url: string,
     message: string,
     created_at: string
 }
 
-// The paginated data structure from the API
 export interface NotificationPaginatedData {
     count: number,
     next: string | null,
@@ -28,7 +29,6 @@ export interface NotificationPaginatedData {
     results: Notification[]
 }
 
-// The action response wrapper
 export interface NotificationResponse {
     success: boolean,
     data: NotificationPaginatedData,

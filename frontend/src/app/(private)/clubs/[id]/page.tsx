@@ -24,9 +24,7 @@ import { LockIcon } from "@/src/app/components/atoms/Icons";
 
 function ClubPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const user = useUser();
   const id = params.id as string;
   const dispatch = useAppDispatch();
   const club = useAppSelector((state) => selectClubById(state, id));
@@ -182,7 +180,7 @@ function ClubPage() {
                   <span>•</span>
                   <span>{club?.member_count} members</span>
                   <span>•</span>
-                  <span>{club?.origin}</span>
+                  <span>{club?.origin || "Global"}</span>
                 </div>
               </div>
 

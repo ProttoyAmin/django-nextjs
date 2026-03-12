@@ -2,7 +2,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { updateUserProfile, getUserDetails } from "@/src/libs/auth/actions/user.actions";
+import {
+  updateUserProfile,
+  getUserDetails,
+} from "@/src/libs/auth/actions/user.actions";
 import { useForm } from "react-hook-form";
 import Form from "@/src/app/components/organisms/Form";
 import Loader from "@/src/app/components/atoms/Loader";
@@ -22,7 +25,7 @@ function AccountPrivacyPage() {
   } = useForm<PrivacySettings>();
   const [isLoading, setIsLoading] = useState(false);
   const [initialData, setInitialData] = useState<any>(null);
-  const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
 
   const isPrivate = watch("is_private");
 
@@ -32,7 +35,7 @@ function AccountPrivacyPage() {
         const userData = await getUserDetails();
         if (userData) {
           setInitialData(userData);
-          setValue("is_private", userData.data.is_private || false);
+          setValue("is_private", userData?.data?.is_private || false);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -46,9 +49,11 @@ function AccountPrivacyPage() {
     setIsLoading(true);
 
     try {
-      const response = await updateUserProfile({ is_private: data.is_private } as any);
+      const response = await updateUserProfile({
+        is_private: data.is_private,
+      } as any);
       if (response) {
-        dispatch(setUser(response.data))
+        dispatch(setUser(response?.data));
         alert("Privacy settings updated successfully!");
       }
     } catch (error: any) {
@@ -60,15 +65,15 @@ function AccountPrivacyPage() {
   };
 
   if (!initialData) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
 
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-2">Account Privacy</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
+          Account Privacy
+        </h1>
         <p className="text-sm sm:text-base text-muted-foreground">
           Manage your account privacy and visibility settings.
         </p>
@@ -82,8 +87,9 @@ function AccountPrivacyPage() {
                 Private Account
               </h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                When your account is private, only people you approve can see your posts
-                and stories. Your existing followers won't be affected.
+                When your account is private, only people you approve can see
+                your posts and stories. Your existing followers won't be
+                affected.
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer shrink-0 sm:ml-4 self-start sm:self-center">
@@ -119,8 +125,8 @@ function AccountPrivacyPage() {
                     Private Account Enabled
                   </p>
                   <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                    New followers will need your approval. Your existing followers can
-                    still see your posts.
+                    New followers will need your approval. Your existing
+                    followers can still see your posts.
                   </p>
                 </div>
               </div>
@@ -137,15 +143,16 @@ function AccountPrivacyPage() {
           <div>
             <p className="font-medium text-foreground mb-1">Public Account</p>
             <p>
-              Anyone can see your posts, followers, and following. Your account appears
-              in search results and recommendations.
+              Anyone can see your posts, followers, and following. Your account
+              appears in search results and recommendations.
             </p>
           </div>
           <div>
             <p className="font-medium text-foreground mb-1">Private Account</p>
             <p>
-              Only approved followers can see your posts. Your account won't appear in
-              search results or recommendations for people who don't follow you.
+              Only approved followers can see your posts. Your account won't
+              appear in search results or recommendations for people who don't
+              follow you.
             </p>
           </div>
         </div>
@@ -155,4 +162,3 @@ function AccountPrivacyPage() {
 }
 
 export default AccountPrivacyPage;
-

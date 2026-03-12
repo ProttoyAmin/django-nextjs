@@ -68,10 +68,8 @@ class Club(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             from django.utils.text import slugify
-            import uuid
             base_slug = slugify(self.name)
-            unique_id = str(uuid.uuid4())[:8]
-            self.slug = f"{base_slug}{self.origin}{unique_id}".lower()
+            self.slug = f"{base_slug}{self.origin.code if self.origin else "global"}".lower()
 
         super().save(*args, **kwargs)
 
@@ -112,6 +110,9 @@ class Club(models.Model):
 
 class Role(models.Model):
     """Dynamic role model for clubs - allows custom roles with specific permissions"""
+    DEFAULT_ROLE = 'Owner'
+    DEFAULT_COLOR = "#8F2811"
+    
     id = models.BigIntegerField(
         primary_key=True, default=generate_snowflake_id, editable=False)
     club = models.ForeignKey(
@@ -214,7 +215,47 @@ class Role(models.Model):
 
     def user_count(self):
         return self.users.count()
+    
+    def create_default_owner_role(self, club):
+        """Utility method to create default roles for a new club"""
+        role = self.objects.create(
+            club=club,
+            name=self.DEFAULT_ROLE,
+            is_default=True,
+            color=self.DEFAULT_COLOR
+        )
+        
+        # Add more later if needed 
+        
+        # moderator_role = Role.objects.create(
+        #     club=club,
+        #     name='Moderator',
+        #     permissions={
+        #         'can_view_posts': True,
+        #         'can_create_posts': True,
+        #         'can_comment': True,
+        #         'can_join_events': True,
+        #         'can_manage_members': True,
+        #         'can_manage_posts': True,
+        #     }
+        # )
+        # admin_role = Role.objects.create(
+        #     club=club,
+        #     name='Admin',
+        #     permissions={
+        #         'can_view_posts': True,
+        #         'can_create_posts': True,
+        #         'can_comment': True,
+        #         'can_join_events': True,
+        #         'can_manage_members': True,
+        #         'can_manage_posts': True,
+        #         'can_manage_settings': True,
+        #     }
+        # )
+        return role
 
+    def get_default_ownder_role(self):
+        return self.DEFAULT_ROLE
 
 class Membership(models.Model):
     """

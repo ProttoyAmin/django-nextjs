@@ -51,6 +51,41 @@ class RegisterView(generics.CreateAPIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = serializers.CustomTokenObtainPairSerializer
 
+class ValidateTypeView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = serializers.UserTypeAssignmentSerializer
+
+    def get(self, request):
+        serializer = self.get_serializer()
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        user = request.user
+        validated_data = serializer.validated_data
+        
+        user.institute = validated_data['institute']
+        user.type = validated_data['user_type']
+        user.professional_email = validated_data['professional_email']
+        user.save()
+        
+        return Response({
+            "message": "Type and institute assigned successfully.",
+            "user_type": user.type,
+            "institute": user.institute.name,
+            "data" : serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+class CompleteUserInfoView(generics.RetrieveUpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = serializers.UserSerializer
+    queryset = models.User.objects.all()
+    lookup_field = 'id'
+    lookup_url_kwarg = 'user_id'
+
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
@@ -211,7 +246,7 @@ def get_users(request):
             status=status.HTTP_204_NO_CONTENT
         )
 
-    visible_fields = ['id', 'username', 'email', 'professional_email', 'url']
+    visible_fields = ['id', 'username', 'email', 'professional_email', 'url', 'password']
 
     serializer = serializers.UserProfileSerializer(
         users,
@@ -283,7 +318,9 @@ def get_user_byUsername(request, username):
 def get_user_profile(request, user_id):
     """Get any user's public profile"""
     user = get_object_or_404(models.User, pk=user_id)
-
+    # params = list(request.query_params.keys())
+    params = request.query_params.get('fields').split(',') if request.query_params.get('fields') else None
+    
     if not user.can_view_profile(request.user):
         return Response(
             {
@@ -296,7 +333,7 @@ def get_user_profile(request, user_id):
                 'following_count' : user.following_count,
                 'follower_count' : user.follower_count,
                 'user_post_count' : user.user_post_count,
-                'is_private': True,
+                'is_private': user.is_private,
                 'is_following': user.is_followed_by(request.user) if hasattr(user, 'is_followed_by') else False,
                 'follow_status': Follow.get_follow_status(request.user, user) if hasattr(Follow, 'get_follow_status') else None
             },
@@ -304,7 +341,9 @@ def get_user_profile(request, user_id):
         )
 
     serializer = serializers.UserProfileSerializer(
-        user, context={'request': request})
+        user,
+        context={'request': request, 'fields': params if params else None}
+    )
     return Response(serializer.data)
 
 

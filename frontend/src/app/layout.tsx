@@ -5,7 +5,9 @@ import { ReduxProviders } from "./components/ReduxProvider";
 import AuthGuard from "./components/AuthGuard";
 import { AuthProvider } from "../context/AuthContext";
 import ConditionalLayout from "./components/ConditionalLayout";
-import { Toaster } from "react-hot-toast";
+// import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,18 +32,23 @@ export default function RootLayout({
   modal?: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} dark antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReduxProviders>
           <AuthGuard requireAuth={true}>
             <AuthProvider>
               <ConditionalLayout>
+                {/* <ThemeProvider
+                  attribute="class"
+                  defaultTheme="dark"
+                  enableSystem
+                  disableTransitionOnChange
+                > */}
                 {children}
                 {modal}
-
-                <Toaster
+                {/* <Toaster
                   position="bottom-right"
                   toastOptions={{
                     duration: 4000,
@@ -51,7 +58,15 @@ export default function RootLayout({
                       borderRadius: "10px",
                     },
                   }}
+                /> */}
+                <Toaster
+                  theme="dark"
+                  position="bottom-right"
+                  toastOptions={{
+                    duration: 4000,
+                  }}
                 />
+                {/* </ThemeProvider> */}
               </ConditionalLayout>
             </AuthProvider>
           </AuthGuard>

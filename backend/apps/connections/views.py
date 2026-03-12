@@ -86,16 +86,32 @@ def follow_status(request, user_id):
     """
     target_user = get_object_or_404(User, pk=user_id)
 
-    is_following = Follow.is_following(request.user, target_user)
-    is_followed_by = Follow.is_following(target_user, request.user)
-    is_mutual = Follow.are_mutual_followers(request.user, target_user)
-    follow_status_value = Follow.get_follow_status(request.user, target_user)
+    # Check outgoing follow (you -> them)
+    sent_follow = Follow.objects.filter(follower=request.user, following=target_user).first()
+    
+    # Check incoming follow (them -> you)
+    received_follow = Follow.objects.filter(follower=target_user, following=request.user).first()
+
+    is_following = sent_follow.status == 'accepted' if sent_follow else False
+    is_followed_by = received_follow.status == 'accepted' if received_follow else False
+    is_mutual = is_following and is_followed_by
+    
+    # follow_status_value represents YOUR follow status toward THEM
+    follow_status_value = sent_follow.status if sent_follow else None
+    
+    # Determine the verb based on pending requests
+    verb = None
+    if sent_follow and sent_follow.status == 'pending':
+        verb = 'sent'
+    elif received_follow and received_follow.status == 'pending':
+        verb = 'received'
 
     serializer = serializers.FollowStatusSerializer({
         'is_following': is_following,
         'is_followed_by': is_followed_by,
         'is_mutual': is_mutual,
-        'follow_status': follow_status_value
+        'follow_status': follow_status_value,
+        'verb': verb
     })
 
     return Response(serializer.data)
@@ -227,7 +243,7 @@ def pending_follow_requests(request):
 
     requests_data = [
         {
-            'request_id': pending.id,
+            'request_id': str(pending.id),
             'user': {
                 'user_id': pending.follower.id,
                 'username': pending.follower.username,
@@ -242,8 +258,8 @@ def pending_follow_requests(request):
             },
             'requested_at': pending.created_at,
             'actions': {
-                'accept_url': request.build_absolute_uri(f'/api/v1/followers/accept/{pending.follower.id}/'),
-                'reject_url': request.build_absolute_uri(f'/api/v1/followers/reject/{pending.follower.id}/'),
+                'accept_url': request.build_absolute_uri(f'/api/v1/connections/requests/{pending.follower.id}/accept/'),
+                'reject_url': request.build_absolute_uri(f'/api/v1/connections/requests/{pending.follower.id}/reject/'),
             }
         }
         for pending in paginated_requests

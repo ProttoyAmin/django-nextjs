@@ -16,7 +16,7 @@ type ColumnProps = {
 function Column({ headerProps, bodyContent }: ColumnProps) {
   return (
     <>
-      <div className="h-screen w-1/2 mx-auto">
+      <div className="min-h-screen w-full md:w-1/2 mx-auto">
         <ColumnHeader headers={headerProps} />
         <ColumnBody bodyContent={bodyContent} />
       </div>

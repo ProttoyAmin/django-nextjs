@@ -8,43 +8,44 @@ import { useRouter } from "next/navigation";
 import { RForm } from "@/types";
 import Form, { FormField } from "../../components/organisms/Form";
 import { signupSchema } from "@/src/libs/validation/signup.schema";
-import { getInstituteCodesOnly } from "@/src/libs/auth/actions/institute.action";
+// import { getInstituteCodesOnly } from "@/src/libs/auth/actions/institute.action";
+// import { Institute } from "@/src/types/institute";
 
 function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [instituteOptions, setInstituteOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
-  const [formMethods, setFormMethods] = useState<any>(null);
+  const [formMethods, setFormMethods] = useState<HTMLFormElement>();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchInstituteCodes = async () => {
-      setIsLoading(true);
-      try {
-        const res = await getInstituteCodesOnly();
+  // useEffect(() => {
+  //   const fetchInstituteCodes = async () => {
+  //     setIsLoading(true);
+  //     try {
+  //       const res = await getInstituteCodesOnly();
 
-        if (res?.success && res.data?.results) {
-          const options = res.data.results.map((institute: any) => ({
-            value: institute.id,
-            label: institute.code,
-          }));
-          setInstituteOptions(options);
-        }
-      } catch (error) {
-        console.error("Error fetching institute codes:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //       if (res?.success && res.data?.results) {
+  //         const options = res.data.results.map((institute: Institute) => ({
+  //           value: institute.id,
+  //           label: institute.code,
+  //         }));
+  //         setInstituteOptions(options);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching institute codes:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    fetchInstituteCodes();
-  }, []);
+  //   fetchInstituteCodes();
+  // }, []);
 
   const onSubmit = async (data: RForm) => {
     setIsLoading(true);
     try {
-      const result = await RegisterUser(data);
+      const result = await registerUser(data);
       if (result.success) {
         if (formMethods) {
           formMethods.reset();
@@ -90,6 +91,7 @@ function SignUpForm() {
     {
       name: "password",
       type: "password",
+      score: true,
       label: "Password",
       placeholder: "Enter password",
       required: true,
@@ -105,25 +107,25 @@ function SignUpForm() {
       className: "inputField",
       floatingLabel: true,
     },
-    {
-      name: "professional_email",
-      type: "email",
-      label: "Professional Email",
-      placeholder: "Enter professional email",
-      required: false,
-      className: "inputField",
-      floatingLabel: true,
-    },
-    {
-      name: "institute",
-      type: "select",
-      label: "Institute",
-      placeholder: isLoading ? "Loading codes..." : "Select institute code",
-      required: false,
-      className: "inputField",
-      floatingLabel: true,
-      options: instituteOptions,
-    },
+    // {
+    //   name: "professional_email",
+    //   type: "email",
+    //   label: "Professional Email",
+    //   placeholder: "Enter professional email",
+    //   required: false,
+    //   className: "inputField",
+    //   floatingLabel: true,
+    // },
+    // {
+    //   name: "institute",
+    //   type: "select",
+    //   label: "Institute",
+    //   placeholder: isLoading ? "Loading codes..." : "Select institute code",
+    //   required: false,
+    //   className: "inputField",
+    //   floatingLabel: true,
+    //   options: instituteOptions,
+    // },
   ];
 
   return (
@@ -132,7 +134,7 @@ function SignUpForm() {
         fields={fields}
         schema={signupSchema}
         onSubmit={onSubmit}
-        onFormMount={setFormMethods}
+        onFormMount={setFormMethods as any}
         resetOnSubmit={false}
         submitButton={{
           text: "Register",

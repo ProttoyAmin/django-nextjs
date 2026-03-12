@@ -17,7 +17,7 @@ import {
 import DropdownMenu from "@/src/app/components/molecules/DropDownMenu";
 import { useAppDispatch } from "@/src/redux-store/hooks";
 import { useParams } from "next/navigation";
-import toast, { ToastBar, Toaster } from "react-hot-toast";
+import { toast } from "sonner";
 
 function ListRoles({ roles }: { roles: RoleType[] }) {
   const [selected, setSelected] = useState<string>();
@@ -68,7 +68,7 @@ function ListRoles({ roles }: { roles: RoleType[] }) {
       onClick: async () => {
         if (window.confirm(`Are you sure you want to delete "${role.name}"?`)) {
           const result = await dispatch(
-            deleteRoleThunk({ clubId, roleId: String(role.id) })
+            deleteRoleThunk({ clubId, roleId: String(role.id) }),
           );
 
           if (deleteRoleThunk.fulfilled.match(result)) {
@@ -76,13 +76,11 @@ function ListRoles({ roles }: { roles: RoleType[] }) {
           } else if (deleteRoleThunk.rejected.match(result)) {
             const error = result.payload;
 
-            // Helper: extract readable message from error object
             let message = "Failed to delete role";
 
             if (typeof error === "string") {
               message = error;
             } else if (error && typeof error === "object") {
-              // Try to get the first meaningful error value
               const firstValue = Object.values(error)[0];
               message =
                 typeof firstValue === "string"
@@ -126,17 +124,17 @@ function ListRoles({ roles }: { roles: RoleType[] }) {
                   {/* Permissions List */}
                   <div className="space-y-2 mb-4">
                     {Object.entries.length > 1 &&
-                    Object?.entries(role?.permissions)?.map(
-                      ([permission, value]: any, index: number) => (
-                        <p
-                          key={index}
-                          className="text-sm text-gray-600 flex items-center gap-1"
-                        >
-                          <span className="w-2 h-2 bg-[#879b8c]"></span>
-                          {permission.split("_").join(" ")}
-                        </p>
-                      )
-                    )}
+                      Object?.entries(role?.permissions)?.map(
+                        ([permission, value]: any, index: number) => (
+                          <p
+                            key={index}
+                            className="text-sm text-gray-600 flex items-center gap-1"
+                          >
+                            <span className="w-2 h-2 bg-[#879b8c]"></span>
+                            {permission.split("_").join(" ")}
+                          </p>
+                        ),
+                      )}
                   </div>
 
                   {/* Member Count */}
@@ -155,7 +153,7 @@ function ListRoles({ roles }: { roles: RoleType[] }) {
                         "Clicked menu item:",
                         item.id,
                         "for role:",
-                        role.id
+                        role.id,
                       );
                     }}
                     position="bottom"
@@ -169,18 +167,6 @@ function ListRoles({ roles }: { roles: RoleType[] }) {
           ))}
         </div>
       </div>
-      <Toaster
-        position="bottom-right"
-        reverseOrder={false}
-        toastOptions={{
-          duration: 5000,
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        }}
-      />
     </>
   );
 }

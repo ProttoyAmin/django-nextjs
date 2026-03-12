@@ -20,7 +20,7 @@ interface FollowRelationship {
     isFollowing: boolean;
     isFollowedBy: boolean;
     isMutual: boolean;
-    followStatus: 'pending' | 'accepted' | 'blocked' | null;
+    followStatus: 'pending' | 'accepted' | 'blocked' | 'rejected' | null;
     isLoading: boolean;
 }
 
@@ -245,6 +245,8 @@ export const followSlice = createSlice({
         },
     }
 });
+
+
 
 export const {
     setUpFollowers,

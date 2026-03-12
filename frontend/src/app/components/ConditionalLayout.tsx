@@ -8,6 +8,7 @@ import BottomBar from "./organisms/BottomBar";
 import { PUBLIC_ROUTES } from "@/src/libs/constants";
 
 import { useActivityTracker } from "@/src/hooks/useActivityTracker";
+import InstituteBar from "../(private)/profile/components/InstituteBar";
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -48,7 +49,10 @@ export default function ConditionalLayout({
           <RightBar />
         </div>
       </div>
-      <BottomBar />
+      <InstituteBar />
+      <div className="md:hidden">
+        <BottomBar />
+      </div>
     </div>
   );
 }

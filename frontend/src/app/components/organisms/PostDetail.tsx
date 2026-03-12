@@ -21,6 +21,7 @@ import { UseFormReturn } from "react-hook-form";
 import { updatePost } from "@/src/libs/auth/post.actions";
 import SizeAvatars from "./Avatar";
 import { UserType } from "@/types";
+import { CreatePostResponse, PostType } from "@/src/types/post";
 
 interface PostDetailProps {
   postId: string | number;
@@ -62,7 +63,7 @@ function PostDetail({ postId }: PostDetailProps) {
             setPostComments({
               postId: post.id,
               comments: comments,
-            })
+            }),
           );
         }
       } catch (err) {
@@ -105,20 +106,23 @@ function PostDetail({ postId }: PostDetailProps) {
           setShowEdit(false);
           return;
         }
+        const originalPost = { ...post };
+        dispatch(updateUserPost({ ...post, content: data.content }));
+        setShowEdit(false);
+        setOpenModal(false);
+
         try {
           const response = await updatePost(post.id, data);
           if (response.success) {
-            dispatch(updateUserPost(post));
-            setOpenModal(false);
-            setShowEdit(false);
+            dispatch(updateUserPost(response.data as CreatePostResponse));
           } else {
+            dispatch(updateUserPost(originalPost));
             alert(response.errors?.detail || "Failed to update post");
           }
         } catch (error: any) {
+          dispatch(updateUserPost(originalPost));
           alert(error?.message || "Failed to update post");
         }
-
-        setShowEdit(false);
       })();
     }
   };

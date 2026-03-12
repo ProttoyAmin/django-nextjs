@@ -5,7 +5,7 @@ type ColumnBodyProps = {
 };
 
 function ColumnBody({ bodyContent }: ColumnBodyProps) {
-  return <div className="bg-[#1c1e21] rounded-xl p-4">{bodyContent}</div>;
+  return <div className="bg-[#181818] rounded-xl p-4">{bodyContent}</div>;
 }
 
 export default React.memo(ColumnBody);

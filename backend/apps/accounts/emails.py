@@ -8,24 +8,12 @@ User = get_user_model()
 
 
 class CustomActivationEmail(email.ActivationEmail):
-    def get_context_data(self):
-        context = super().get_context_data()
-        user = context.get("user")
-
-        # For student, faculty, staff - use professional_email
-        if user and user.type in ['student', 'faculty', 'staff'] and user.professional_email:
-            context["email"] = user.professional_email
-        return context
 
     def send(self, to, *args, **kwargs):
         user = self.context.get("user")
-
-        # For student, faculty, staff - send to professional_email
-        if user and user.type in ['student', 'faculty', 'staff'] and user.professional_email:
-            to = [user.professional_email]
-        elif user:
-            # For alumni, other - send to regular email
-            to = [get_user_email(user)]
+        
+        to = [get_user_email(user)]
+        print("Sending activation email to: ", to[0])
 
         super().send(to, *args, **kwargs)
 

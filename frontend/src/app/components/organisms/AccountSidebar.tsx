@@ -20,7 +20,7 @@ export default function AccountSidebar({ items }: AccountSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-full lg:w-64 shrink-0 border-border bg-card rounded-lg lg:rounded-none shadow-md lg:shadow-none mb-4 lg:mb-0">
+    <aside className="w-full lg:w-64 shrink-0 border-border bg-background rounded-lg lg:rounded-none shadow-md lg:shadow-none mb-4 lg:mb-0">
       <nav className="p-2 sm:p-4 space-y-1 sm:space-y-2">
         <h2 className="px-4 py-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden lg:block">
           Settings
@@ -36,7 +36,7 @@ export default function AccountSidebar({ items }: AccountSidebarProps) {
                 ${
                   isActive
                     ? "bg-primary text-primary-foreground font-semibold"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 }
               `}
             >
@@ -51,4 +51,3 @@ export default function AccountSidebar({ items }: AccountSidebarProps) {
     </aside>
   );
 }
-

@@ -2,8 +2,11 @@
 from rest_framework import serializers as rest_serializers
 from django.urls import reverse
 from django.utils.text import slugify
+from django.db.models import Value
+from django.db.models.functions import Lower, Replace
 from django.conf import settings
 from . import models
+from apps.institutes.models import Institute
 import mimetypes
 
 MAX_SIZE = 5 * 1024 * 1024
@@ -233,6 +236,7 @@ class ClubListSerializer(rest_serializers.ModelSerializer):
     members_url = rest_serializers.SerializerMethodField()
     posts_url = rest_serializers.SerializerMethodField()
     events_url = rest_serializers.SerializerMethodField()
+    origin = rest_serializers.CharField()
 
     class Meta:
         model = models.Club
@@ -276,8 +280,15 @@ class ClubListSerializer(rest_serializers.ModelSerializer):
         return bool(getattr(obj, 'user_memberships', []))
 
 
+class DemoSerializer(rest_serializers.ModelSerializer):
+    class Meta:
+        model = models.Club
+        fields = "__all__"
+
+
 class ClubDetailSerializer(rest_serializers.ModelSerializer):
     id = rest_serializers.CharField(read_only=True)
+    origin = rest_serializers.CharField()
     owner_details = rest_serializers.SerializerMethodField()
     member_count = rest_serializers.SerializerMethodField()
     post_count = rest_serializers.SerializerMethodField()
@@ -326,12 +337,10 @@ class ClubDetailSerializer(rest_serializers.ModelSerializer):
         return obj.owner == request.user
 
     def get_avatar(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(obj.avatar)
+        return obj.avatar
 
     def get_banner(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(obj.banner if obj.banner else None)
+        return obj.banner
 
     def get_url(self, obj):
         request = self.context.get('request')
@@ -400,23 +409,25 @@ class ClubDetailSerializer(rest_serializers.ModelSerializer):
 class ClubSerializer(rest_serializers.ModelSerializer):
     """For create/update — requires name, origin, and optional fields"""
     id = rest_serializers.CharField(read_only=True)
-    origin = rest_serializers.CharField(
-        required=True,
-        help_text="Origin/location of the club (e.g., 'dhaka', 'bracu', 'online')"
+    origin = rest_serializers.PrimaryKeyRelatedField(
+        queryset=Institute.objects.all(),
+        required=False,
+        allow_null=True,
+        help_text="Select an institute or leave empty for a global club."
     )
     allow_public_posts = rest_serializers.BooleanField(
         default=False,
         help_text="Allow anyone to see posts from this club even if they are not members."
     )
-    rules = rest_serializers.CharField(
-        required=True,
-        help_text="Rules for the club (e.g., 'No hate speech', 'No spam', 'No harassment')"
-    )
+    # rules = rest_serializers.CharField(
+    #     required=True,
+    #     help_text="Rules for the club (e.g., 'No hate speech', 'No spam', 'No harassment')"
+    # )
 
     class Meta:
         model = models.Club
         fields = ['id', 'name', 'origin', 'about',
-                  'avatar', 'banner', 'privacy', 'is_public', 'allow_public_posts', 'rules']
+                  'avatar', 'banner', 'privacy', 'is_public', 'allow_public_posts']
         read_only_fields = ['id']
 
     def get_validators(self):
@@ -434,36 +445,48 @@ class ClubSerializer(rest_serializers.ModelSerializer):
         ]
         return validators
 
-    def validate_origin(self, value):
-        """Normalize origin to lowercase and slugify"""
-        if not value or not value.strip():
-            raise rest_serializers.ValidationError("Origin cannot be empty.")
-        return slugify(value).lower()
-
     def validate(self, data):
-        """Check for duplicate club name + origin combination"""
+        """Check for duplicate club name + origin combination (robust)"""
         name = data.get('name')
         origin = data.get('origin')
 
         instance = self.instance
 
-        if name and origin:
-            queryset = models.Club.objects.filter(name=name, origin=origin)
+        if name:
+            # Normalize the input name for comparison
+            normalized_name = name.strip().replace(" ", "").lower()
+
+            # Check for existing clubs with same normalized name and origin
+            # We use Replace to remove spaces and Lower for case-insensitivity on the DB side
+            queryset = models.Club.objects.annotate(
+                normalized_name_db=Lower(
+                    Replace('name', Value(' '), Value('')))
+            ).filter(
+                normalized_name_db=normalized_name,
+                origin=origin
+            )
+
             if instance:
                 queryset = queryset.exclude(pk=instance.pk)
 
             if queryset.exists():
+                origin_name = origin.name if origin else "Global"
                 raise rest_serializers.ValidationError({
-                    'origin': f'A club named "{name}" already exists in this origin". Please choose a different name or origin. (eg: AIUB, Online, Local)'
+                    'name': f'A club with a very similar name already exists for "{origin_name}". Please choose a more distinct name.'
                 })
         return data
 
     def update(self, instance, validated_data):
         """Handle Slug update on name/origin change"""
-        if 'name' in validated_data:
-            instance.slug = slugify(
-                validated_data['name'].strip() + instance.origin)
+        if 'name' in validated_data or 'origin' in validated_data:
+            name = validated_data.get('name', instance.name)
+            origin = validated_data.get('origin', instance.origin)
+            origin_str = str(origin.id) if origin else "global"
+            instance.slug = slugify(f"{name.strip()}-{origin_str}")
         return super().update(instance, validated_data)
+
+    def get_origin(self, obj):
+        return obj.origin
 
 
 class ClubAvatarUploadSerializer(rest_serializers.Serializer):

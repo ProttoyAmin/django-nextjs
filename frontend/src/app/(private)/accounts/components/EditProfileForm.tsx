@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { updateUserProfile, getUserDetails } from "@/src/libs/auth/actions/user.actions";
+import {
+  updateUserProfile,
+  getUserDetails,
+} from "@/src/libs/auth/actions/user.actions";
 import { useRouter } from "next/navigation";
 import Form, { FormField } from "@/src/app/components/organisms/Form";
 import { getChangedFields, hasChanges } from "@/src/libs/utils/helpers";
@@ -13,7 +16,7 @@ function EditProfileForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [initialData, setInitialData] = useState<UserType | null>(null);
-  const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -44,7 +47,7 @@ function EditProfileForm() {
     try {
       const response = await updateUserProfile(changedData as UserType);
       if (response) {
-        dispatch(setUser(response.data))
+        dispatch(setUser(response.data));
         router.refresh();
       }
     } catch (error: any) {
@@ -70,8 +73,8 @@ function EditProfileForm() {
       floatingLabel: true,
       layout: {
         colSpan: 6,
-        className: "md:col-span-6"
-      }
+        className: "md:col-span-6",
+      },
     },
     {
       name: "last_name",
@@ -86,52 +89,69 @@ function EditProfileForm() {
       floatingLabel: true,
       layout: {
         colSpan: 6,
-        className: "md:col-span-6"
-      }
-    },
-    {
-      name: "department",
-      label: "Department",
-      type: "text",
-      default: initialData?.department || "",
-      validation: {
-        maxLength: { value: 100, message: "Maximum 100 characters" },
+        className: "md:col-span-6",
       },
-      floatingLabel: true,
-      layout: {
-        colSpan: 12,
-        className: "md:col-span-12"
-      }
     },
+    // {
+    //   name: "department",
+    //   label: "Department",
+    //   type: "text",
+    //   default: initialData?.department || "",
+    //   validation: {
+    //     maxLength: { value: 100, message: "Maximum 100 characters" },
+    //   },
+    //   floatingLabel: true,
+    //   layout: {
+    //     colSpan: 12,
+    //     className: "md:col-span-12"
+    //   }
+    // },
+    // {
+    //   name: "year",
+    //   label: "Year",
+    //   type: "number",
+    //   default: initialData?.year || 0,
+    //   validation: {
+    //     min: { value: 0, message: "Year must be a positive number" },
+    //     max: { value: 10, message: "Year must be less than 10" },
+    //   },
+    //   floatingLabel: true,
+    //   layout: {
+    //     colSpan: 6,
+    //     className: "md:col-span-6"
+    //   }
+    // },
+    // {
+    //   name: "student_id",
+    //   label: "Student ID",
+    //   type: "text",
+    //   default: initialData?.student_id || "",
+    //   validation: {
+    //     minLength: { value: 1, message: "Minimum 1 character" },
+    //     maxLength: { value: 20, message: "Maximum 20 characters" },
+    //   },
+    //   floatingLabel: true,
+    //   layout: {
+    //     colSpan: 6,
+    //     className: "md:col-span-6"
+    //   }
+    // },
     {
-      name: "year",
-      label: "Year",
-      type: "number",
-      default: initialData?.year || 0,
-      validation: {
-        min: { value: 0, message: "Year must be a positive number" },
-        max: { value: 10, message: "Year must be less than 10" },
-      },
+      name: "gender",
+      label: "Gender",
+      type: "select",
+      placeholder: "Select Gender",
+      default: initialData?.gender || "",
+      options: [
+        { value: "male", label: "Male" },
+        { value: "female", label: "Female" },
+        { value: "other", label: "Other" },
+      ],
       floatingLabel: true,
       layout: {
         colSpan: 6,
-        className: "md:col-span-6"
-      }
-    },
-    {
-      name: "student_id",
-      label: "Student ID",
-      type: "text",
-      default: initialData?.student_id || "",
-      validation: {
-        minLength: { value: 1, message: "Minimum 1 character" },
-        maxLength: { value: 20, message: "Maximum 20 characters" },
+        className: "md:col-span-6",
       },
-      floatingLabel: true,
-      layout: {
-        colSpan: 6,
-        className: "md:col-span-6"
-      }
     },
     {
       name: "bio",
@@ -141,16 +161,14 @@ function EditProfileForm() {
       floatingLabel: true,
       layout: {
         colSpan: 12,
-        className: "md:col-span-12"
+        className: "md:col-span-12",
       },
-      className: ""
-    }
+      className: "",
+    },
   ];
 
   if (!initialData) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
 
   return (
@@ -170,7 +188,7 @@ function EditProfileForm() {
           loading: isLoading,
           fullWidth: true,
           variant: "primary",
-          size: "lg"
+          size: "lg",
         }}
         defaultValues={initialData}
       />

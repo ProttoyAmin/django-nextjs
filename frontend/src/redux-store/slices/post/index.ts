@@ -52,6 +52,7 @@ const postSlice = createSlice({
         },
         updateUserPost: (state, action: PayloadAction<PostType>) => {
             state.entities[action.payload.id] = action.payload;
+            state.clubEntities[action.payload.id] = action.payload;
         },
         updatePostLike: (state, action: PayloadAction<{ postId: string | number }>) => {
             const post = state.entities[action.payload.postId];

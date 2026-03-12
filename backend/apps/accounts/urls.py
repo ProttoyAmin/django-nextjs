@@ -17,10 +17,12 @@ urlpatterns = [
     path("auth/jwt/logout/", views.LogoutView.as_view(), name="jwt_logout"),
     path("auth/register/", views.RegisterView.as_view(), name="register"),
     path("auth/obtain/", views.CustomTokenObtainPairView.as_view(), name="obtain_token"),
+    path("auth/validate/", views.ValidateTypeView.as_view(), name="authenticate_type"),
     
     # User lookup
     path("auth/users/user/<str:username>/", views.get_user_byUsername, name="user_details"),
     path('auth/all/', views.get_users, name="all_users"),
+    path('auth/<int:user_id>/all/', views.CompleteUserInfoView.as_view(), name="all_users_by_id"),
     
     # Current user endpoints
     path('auth/me/', views.get_current_user, name='current_user'),

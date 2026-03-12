@@ -51,10 +51,17 @@ def list_likes(request):
     object_id = request.query_params.get('object_id')
 
     if not content_type_str or not object_id:
+        likes = Like.objects.all().select_related('user')
+        serializer = serializers.LikeSerializer(likes, many=True, context={'request': request})
         return Response(
-            {'detail': 'content_type and object_id are required.'},
-            status=status.HTTP_400_BAD_REQUEST
+            {'detail': 'content_type and object_id are required. Returning all likes.', 
+             'likes': serializer.data},
+            status=status.HTTP_200_OK
         )
+        # return Response(
+        #     {'detail': 'content_type and object_id are required.'},
+        #     status=status.HTTP_400_BAD_REQUEST
+        # )
 
     # Verify object exists
     content_object = get_content_object(content_type_str, object_id)

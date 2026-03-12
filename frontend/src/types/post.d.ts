@@ -79,40 +79,13 @@ export interface CreatePostRequest {
   original_post?: number;
 }
 
-export interface CreatePostResponse {
-  id: number;
-  url: string;
-  author_id: number;
-  author_username: string;
-  author_avatar: string;
-  author_url: string;
-  post_type: 'TEXT' | 'IMAGE' | 'VIDEO' | 'MIXED';
-  content: string | null;
-  image: string | null;
-  video: string | null;
-  image_file: string | null;
-  video_file: string | null;
-  image_url: string | null;
-  video_url: string | null;
-  media_files?: MediaFile[];
-  original_post: number | null;
-  original_post_data: any | null;
-  like_count: number;
-  comment_count: number;
-  share_count: number;
-  repost_count: number;
-  is_liked: boolean;
-  is_shared: boolean;
-  can_edit: boolean;
+export interface CreatePostResponse extends PostType {
   likes_url: string;
   comments_url: string;
   shares_url: string;
   like_toggle_url: string;
   share_toggle_url: string;
   repost_url: string;
-  is_public: boolean;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface UploadResponse {

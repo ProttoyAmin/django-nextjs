@@ -39,6 +39,8 @@ export interface UserType {
     detail?: string;
     id: number | string;
     username: string;
+    institute?: string;
+    institute_id?: number | string;
     first_name: string;
     last_name: string;
     email: string;
@@ -46,6 +48,7 @@ export interface UserType {
     url: string;
     student_id: string | null;
     status: string;
+    type: string;
     is_status_manual: boolean;
     department: string | null;
     year: string | null;
@@ -53,6 +56,7 @@ export interface UserType {
     profile_picture_url: string | null;
     avatar: string | null;
     bio: string;
+    gender: string | null;
     location: string | null;
     website: string | null;
     date_of_birth: string | null;
@@ -164,6 +168,7 @@ export interface FollowStatus {
     is_followed_by: boolean;
     is_mutual: boolean;
     follow_status?: 'pending' | 'accepted' | null;
+    verb: string | null;
 }
 
 export interface Comment {

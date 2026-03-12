@@ -27,19 +27,8 @@ export const signupSchema = z.object({
     re_password: z
         .string()
         .min(1, "Confirm password is required"),
-
-    institute: z
-        .string()
-        .optional()
-        .nullable(),
-
-    professional_email: z
-        .string()
-        .email("Invalid professional email")
-        .optional()
-        .or(z.literal("")),
 })
-    .superRefine(({ password, re_password, username }, ctx) => {
+    .superRefine(({ password, re_password }, ctx) => {
         if (password !== re_password) {
             ctx.addIssue({
                 path: ["re_password"],
